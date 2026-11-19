@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kali-ux"
-version = "0.2.0a1"
+version = "0.3.0a1"
 description = "A modular desktop-experience enhancement suite for Kali Linux."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -22,6 +22,7 @@ dev = [
 [project.scripts]
 kali-ux = "kali_ux.cli:main"
 kali-ux-swipeswitch = "kali_ux.features.window_switcher.engine.__main__:main"
+kali-ux-gui = "kali_ux.ui.app:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

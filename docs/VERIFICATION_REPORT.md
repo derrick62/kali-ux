@@ -1,24 +1,19 @@
 # Verification report
 
-**Build:** Kali UX 0.2.0-alpha.1  
-**Environment:** Linux build container; not a live Kali XFCE desktop
+**Build:** Kali UX 0.3.0-alpha.1  
+**Environment:** Linux build container; no live Kali XFCE desktop
 
 ## Automated checks
 
-- Python compilation: passed.
-- Core unit/service tests: 7 passed.
-- SwipeSwitch parser/recognizer/state tests: 19 passed, 3 expected failures retained as explicit acceptance tests, 1 tracker integration module skipped because PyGObject/libwnck are unavailable in this container.
+- Python source compilation: passed.
+- Automated suite: **26 passed, 1 skipped, 3 expected failures**.
+- Skipped: libwnck tracker integration (PyGObject/libwnck unavailable in build container).
+- Expected failures: gesture reversal step semantics and two legacy state-machine threshold/timeout expectations. These remain visible acceptance items.
 - CLI version, feature listing and JSON status smoke tests: passed.
-- ZIP integrity: verified after archive creation.
-
-The three expected failures are not silently treated as resolved:
-
-- Horizontal reversal currently reports two rightward steps where the test expects one; define whether movement is cumulative net displacement or incremental correction.
-- The legacy state-machine test expects a 30px swipe to show the overlay while the configured threshold is 35px.
-- Its timeout test consequently expects an overlay hide that was never shown.
-
-These should be resolved through a deliberate product decision and implementation change, not by weakening the acceptance criteria.
+- GUI module import without GTK runtime: passed; launching GUI correctly reports missing GTK3/libwnck dependencies in this container.
+- Python wheel build: passed (`kali_ux-0.3.0a1-py3-none-any.whl`).
+- No live GTK interface rendering or desktop interaction was possible here.
 
 ## Not verified
 
-No live Kali XFCE/X11 session, GTK3/libwnck runtime, real touchpad, multi-monitor setup, compositor, xfwm4 snapping, clipboard selection monitoring, or notification daemon was available. No production input listener was automatically started. This archive is an integrated alpha baseline, not a production-ready installer or release.
+No live X11/XFCE session, GTK window rendering, real touchpad, multi-monitor layout, xfwm4 geometry, clipboard manager, notification daemon or compositor was available. Do not interpret automated tests as live desktop acceptance.

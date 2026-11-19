@@ -21,7 +21,7 @@ def _imports():
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(prog="swipeswitch")
+    parser = argparse.ArgumentParser(prog="kali-ux-swipeswitch")
     parser.add_argument("--debug", action="store_true")
     parser.add_argument("--config")
     parser.add_argument("--check", action="store_true")

@@ -15,6 +15,7 @@ def build_parser():
  sub.add_parser('init',help='Create a private default configuration')
  sub.add_parser('features',help='List bundled features')
  sub.add_parser('swipeswitch',help='Start the SwipeSwitch X11/GTK3 interface')
+ sub.add_parser('gui',help='Open the Kali UX GTK3 Control Center')
  return p
 
 def main(argv:list[str]|None=None)->int:
@@ -26,5 +27,9 @@ def main(argv:list[str]|None=None)->int:
  if a.command=='swipeswitch':
   from kali_ux.features.window_switcher.engine.__main__ import main as run_switcher
   return run_switcher([])
+ if a.command=='gui':
+  from kali_ux.ui.app import main as run_gui
+  try: return run_gui()
+  except RuntimeError as exc: print(exc); return 1
  if a.command=='status' or a.command is None: print(json.dumps(build_report(),indent=2)); return 0
  return 2

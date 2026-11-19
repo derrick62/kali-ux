@@ -14,3 +14,12 @@ All notable project changes are recorded here. This file begins with the foundat
 ### Status
 - No desktop enhancement feature is claimed as complete by this scaffold.
 - SwipeSwitch integration remains subject to the dedicated audit.
+
+## 0.3.0-alpha.1 — Interactive prototype
+
+- Added GTK3 Control Center with Overview, Windows, Clipboard, Applications, Productivity and Settings pages.
+- Added user-triggered window activation, Task View, eight snap presets, session-only clipboard capture/search/copy/clear, application search/launch, XFCE settings shortcuts, focus-mode controls and named layout snapshots.
+- Added `kali-ux gui` / `kali-ux-gui` launch commands and a desktop-entry template.
+- Preserved the original SwipeSwitch documentation under `docs/swipeswitch/`.
+- Added installation and prototype-operation guides.
+- Explicitly retained the known SwipeSwitch acceptance failures and platform validation requirements.

@@ -1,44 +1,10 @@
-KALI UX 0.2.0-alpha.1 — PROJECT MANIFEST
+Kali UX 0.3.0-alpha.1 — interactive prototype
 
-Product: Integrated Linux desktop enhancement suite
-Initial target: Kali Linux / XFCE / X11
-Window manager authority: xfwm4
-Language: Python >= 3.10
-UI toolkit baseline: GTK3 for existing SwipeSwitch integration
-Architecture: modular monolith with static feature registry
+Core: XDG configuration/path handling, configuration defaults, feature registry, platform capability checks, safe command execution, diagnostics.
+UI: GTK3 Control Center with Overview, Windows, Clipboard, Applications, Productivity and Settings.
+Features: SwipeSwitch, Task View, gesture routing contract, snap presets, clipboard history, application launcher, XFCE quick settings, focus mode, layout memory.
+Docs: architecture, product specification, roadmap, feature inventory, design principles, development, testing, privacy/security, packaging, SwipeSwitch audit and original SwipeSwitch documents.
+Tests: 27 passed, 1 skipped, 3 expected failures in the build container.
+Packaging: setuptools source project and Python wheel in dist/.
 
-FOUNDATION DOCUMENTATION
-- README.md
-- docs/PRODUCT_SPECIFICATION.md
-- docs/ROADMAP.md
-- docs/ARCHITECTURE.md
-- docs/FEATURES.md
-- docs/DESIGN_PRINCIPLES.md
-- docs/TESTING.md
-- docs/DEVELOPMENT.md
-- docs/PACKAGING.md
-- docs/SECURITY_AND_PRIVACY.md
-- docs/RESEARCH.md
-- docs/IMPLEMENTATION_STATUS.md
-- docs/VERIFICATION_REPORT.md
-- docs/decisions/*.md
-
-IMPLEMENTED MODULES
-- Shared XDG paths, config defaults, feature registry and capability report
-- SwipeSwitch v0.2.0 preview engine integrated under features/window_switcher/engine
-- Gesture routing contract (no automatic input capture)
-- Snap geometry service
-- Clipboard history model (in-memory only; no watcher)
-- Layout memory service
-- Desktop application discovery/launch service
-- XFCE focus-mode helper
-- XFCE quick-action adapters
-- Task View reuse
-- Control Center model
-- CLI diagnostics
-
-QUALITY STATUS
-- 26 passed, 1 skipped (PyGObject/libwnck unavailable), 3 xfailed (known SwipeSwitch acceptance discrepancies)
-- Python compilation, CLI smoke tests, wheel build and installation passed in build container
-- Live Kali desktop/touchpad validation not performed
-- No production .deb, autostart or systemd service included
+Not implemented/verified: live desktop acceptance, production shared gesture input provider, compositor-aware screenshots/previews, Wayland, fully panel-aware multi-monitor snapping, persistent clipboard history, automatic startup or privileged installation.

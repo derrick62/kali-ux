@@ -1,39 +1,37 @@
-# Implementation status — integrated baseline
+# Implementation status — interactive prototype
 
-**Release:** 0.2.0-alpha.1 (working baseline)  
+**Release:** 0.3.0-alpha.1  
 **Target:** Kali Linux / XFCE / X11  
-**Verification environment:** build container, not a live Kali desktop
+**Verification environment:** Linux build container, not a live Kali desktop
 
-## Implemented in this archive
+## Interactive features now present
 
-- Preserved the existing SwipeSwitch v0.2.0 preview engine under `features/window_switcher/engine/` and connected a dedicated CLI entry point.
-- Added XDG path handling, JSON configuration defaults, a static feature registry, read-only platform capability detection, and safe subprocess wrappers (argument arrays, no shell).
-- Added a normalized gesture event/router contract. It does not capture input or start automatically.
-- Added snap geometry service, bounded in-memory clipboard model, layout snapshot service, XDG desktop-entry discovery, XFCE focus-mode helper, quick-action launcher, Task View reuse, Control Center model and diagnostic report.
-- Added unit tests for the newly implemented service contracts.
+- **Kali UX Control Center:** GTK3 desktop dashboard with Overview, Windows, Clipboard, Applications, Productivity and Settings pages.
+- **SwipeSwitch:** preserved GTK3/libwnck engine, CLI entry point and explicit Control Center launch. Original SwipeSwitch design and development documents are preserved under `docs/swipeswitch/`.
+- **Task View:** interactive window overview, activation and dismissal using the inherited GTK3 implementation.
+- **Window list:** enumerates normal, task-list windows and activates a selected window.
+- **Snap Assist:** eight explicit geometry presets (halves, top/bottom and corners) requested through `wmctrl`.
+- **Clipboard History:** opt-in GTK clipboard-owner monitoring, in-memory bounded history, search, copy-back and clear. No persistence.
+- **Application Launcher:** searchable XDG desktop-entry list and launch through `gio launch`.
+- **Quick Settings:** opens installed XFCE display, sound, network, power and keyboard configuration tools.
+- **Focus Mode:** reversible request to XFCE notification daemon do-not-disturb, retaining the previous value for the current process session.
+- **Layout Memory:** named, explicit window geometry capture and best-effort restore through `wmctrl`.
+- **Diagnostics and configuration:** read-only status, default config creation, implementation notes and explicit feature status.
+- **Shared gesture contract:** normalized gesture model and in-process router. No production shared input provider is enabled.
 
-## Not complete / must not be represented as complete
+## Known limitations — do not represent as complete
 
-- No unified polished GTK Control Center, Quick Panel, Clipboard History UI, Snap Assist UI, Focus UI or Launcher UI.
-- No production shared gesture provider. The existing SwipeSwitch listener remains app-local and uses `libinput debug-events`; provider reliability, permission handling and coexistence need proof on the target Kali release.
-- SwipeSwitch thumbnails remain unimplemented; multi-monitor overlay support remains limited; inherited tests/state semantics require resolution.
-- Window Peek does not capture pixels. A compositor-aware capture backend and privacy model are required.
-- Snap Assist uses direct geometry requests and does not yet calculate usable monitor work areas or offer a visual zone overlay.
-- Clipboard service is not wired to X11 selection monitoring; persistence is deliberately disabled.
-- Layout restoration is best-effort and does not promise cross-monitor or workspace fidelity.
-- The focus helper must be tested against the installed XFCE notification daemon version and preserve exact prior setting semantics.
-- Launcher uses a deliberately basic desktop-file reader; full freedesktop Exec field-code handling and terminal/startup-notify semantics remain.
-- No installer, autostart, systemd user service, or system configuration mutation is enabled by default.
+- SwipeSwitch's three inherited acceptance failures remain documented; tracker integration is skipped in environments without PyGObject/libwnck.
+- Gesture listener still uses `libinput debug-events` and is app-local. Input permission, cancellation, coexistence and hardware behaviour need proof on target Kali. It is never auto-started.
+- Task View focus/dismissal and window activation need live desktop validation.
+- Snap presets currently use the selected monitor's full geometry, not XFCE panel-adjusted work areas; monitor selection and edge cases need refinement.
+- Clipboard monitoring is session-only and depends on GTK clipboard ownership notifications. It cannot identify every sensitive value or observe every clipboard-manager implementation. Pause capture before copying secrets.
+- Layout restoration is best-effort and does not guarantee application identity, workspace or monitor restoration.
+- Focus-mode property semantics vary with XFCE notification daemon versions and need validation.
+- Window Peek screenshot capture and compositor-aware thumbnails are not implemented; no fake preview is shown.
+- Gesture provider arbitration, custom Quick Settings shell, Wayland and other desktop environments are future work.
+- No privileged installer, autostart, systemd service, or system configuration mutation is enabled by default.
 
-## Verification performed for this archive
+## Verification
 
-The archive build should be checked with Python compilation, the GTK-independent pytest suite, CLI smoke tests, and ZIP integrity. These checks do not validate GTK/libwnck, input-device access, window-manager behaviour, or real touchpad gestures. Results are recorded in `docs/VERIFICATION_REPORT.md` after the build.
-
-## Next engineering pass
-
-1. Resolve SwipeSwitch's three previously observed test failures by defining reversal and threshold semantics; do not weaken tests blindly.
-2. Add an adapter around libwnck so core tracker tests can run without importing GI at module import time.
-3. Validate the six agreed gestures on target Kali and decide whether the current input source is safe for production.
-4. Consolidate gesture ownership through the shared router only after the input-provider proof of concept.
-5. Implement GTK interfaces for the remaining features using the common design system.
-6. Add multi-monitor/work-area-aware geometry, capture backend, privacy controls and end-to-end desktop tests.
+See `docs/VERIFICATION_REPORT.md`. Automated Python tests and packaging checks do not prove desktop behaviour. The application requires distribution-provided PyGObject, GTK3 and libwnck, plus X11 desktop utilities.

@@ -34,23 +34,9 @@
 
 Use a virtual environment for Python packaging, but install GTK bindings from the distribution packages:
 
-```bash
-sudo apt update
-sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-wnck-3.0 libwnck-3-0 libinput-tools wmctrl xclip
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -e '.[dev]'
-```
+Follow [`docs/INSTALL.md`](docs/INSTALL.md) for the full dependency and environment setup. In particular, create the virtual environment with `--system-site-packages` so it can access the distribution-provided PyGObject/GTK bindings. Do not use `sudo pip`.
 
-If the system Python GTK bindings are not visible inside the virtual environment, use the system Python for the desktop process or create the environment with `--system-site-packages`. Do not use `sudo pip`.
-
-```bash
-kali-ux init
-kali-ux status
-kali-ux features
-kali-ux swipeswitch   # explicit start; X11 + GTK3/libwnck + touchpad access required
-pytest
-```
+After installation, initialize and launch the Control Center with `kali-ux init` and `kali-ux gui`. Start the gesture listener separately with `kali-ux swipeswitch` only when you explicitly want it.
 
 The suite does not install itself as an autostart item or enable a gesture provider. That should only be done after the user has validated the device, permissions, and conflicts on their machine.
 
@@ -83,3 +69,17 @@ scripts/                 safe developer/release helpers
 Build the whole feature ecosystem as an integrated baseline, then polish feature-by-feature. Do not confuse a module stub with a finished user-facing feature. Every capability must be tested on real XFCE/X11, including multiple monitors, scaling, panels, fullscreen windows, workspaces, minimized windows, and input-device changes.
 
 See `docs/IMPLEMENTATION_STATUS.md`, `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`, `docs/TESTING.md`, `docs/SECURITY_AND_PRIVACY.md`, and `docs/DEVELOPMENT.md`.
+
+## Interactive Control Center prototype
+
+After installing the project and the GTK/X11 system dependencies, launch the desktop UI with:
+
+```bash
+kali-ux gui
+```
+
+The UI provides working prototype interactions for window listing/activation, Task View, eight snap presets, opt-in in-memory clipboard history, application search/launch, XFCE quick settings, focus mode, layout snapshots and diagnostics. See `docs/PROTOTYPE_GUIDE.md` for behaviour and limitations. The application menu entry template is in `packaging/kali-ux.desktop`.
+
+The original SwipeSwitch design, gesture, architecture, testing and development notes are preserved under `docs/swipeswitch/` alongside the integrated project documentation.
+
+For a copy-paste installation procedure, see [`docs/INSTALL.md`](docs/INSTALL.md).
