@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kali-ux"
-version = "0.1.0"
+version = "0.2.0a1"
 description = "A modular desktop-experience enhancement suite for Kali Linux."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [{ name = "Kali UX contributors" }]
-dependencies = []
+dependencies = ["tomli>=2.0; python_version < '3.11'"]
 
 [project.optional-dependencies]
 dev = [
@@ -21,6 +21,7 @@ dev = [
 
 [project.scripts]
 kali-ux = "kali_ux.cli:main"
+kali-ux-swipeswitch = "kali_ux.features.window_switcher.engine.__main__:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -38,3 +39,4 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
+

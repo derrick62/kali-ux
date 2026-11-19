@@ -1,97 +1,85 @@
 # Kali UX
 
-**A modular desktop-experience enhancement suite for Kali Linux, beginning with XFCE/X11.**
+**Kali UX** is a modular desktop-experience suite for Kali Linux. The first target is XFCE on X11. It aims to bring useful, deliberate desktop interactions together while preserving Linux user control and leaving `xfwm4` as the window manager.
 
-Kali UX is a project to make everyday desktop interaction on Kali Linux more fluid, discoverable and cohesive. It takes inspiration from useful desktop interactions found in Windows—window switching, task overview, snapping, quick controls and productivity tools—while respecting Linux desktop conventions and existing system components.
+> **Implementation status:** integrated engineering baseline / early alpha. This archive contains the shared core, feature service foundations, and the SwipeSwitch v0.2.0 preview engine. It is not yet a polished, fully verified desktop product. Some features have working domain services but do not yet have complete GTK interfaces or live desktop integration. See `docs/IMPLEMENTATION_STATUS.md`.
 
-> **Project status:** Foundation and product-definition stage. This repository scaffold does not mean the planned desktop features are implemented. SwipeSwitch is an existing, separately developed project and is the first integration candidate.
+## Included features
 
-## Initial target
+| Feature | Included baseline | Current limitation |
+|---|---|---|
+| SwipeSwitch | Existing GTK3/libwnck switcher, Task View, gesture recognizer, desktop/workspace actions | Inherited audit findings; requires Kali X11 live validation |
+| Shared Gesture Control | Normalized event contract and in-process router | No production input provider/arbitration daemon; disabled by default |
+| Window Overview | Reuses SwipeSwitch Task View | Needs real desktop focus/dismissal testing |
+| Snap Assist | Eight geometry presets via `wmctrl` | No polished preview/assist UI; monitor work-area calculation remains to do |
+| Clipboard History | Bounded, searchable, deduplicated privacy-first model | No clipboard watcher or GTK history panel; persistence off by default |
+| Quick Panel | Delegates to existing XFCE settings applications | No panel UI; optional tools may be absent |
+| Focus Tools | Reversible XFCE notification do-not-disturb helper | Requires target XFCE notification daemon behaviour validation |
+| Application Launcher | XDG desktop-entry discovery/search/launch | Needs desktop-entry Exec parsing and GTK launcher UI hardening |
+| Window Peek | Capability reporting | Screenshot capture deliberately not implemented |
+| Layout Memory | User-triggered geometry snapshots/restoration via `wmctrl` | Best-effort; does not guarantee workspace/monitor fidelity |
+| Control Center | Feature/configuration model | GTK interface not yet implemented |
+| Diagnostics | Read-only platform capability report | More diagnostic probes and redaction review needed |
 
-| Area | Initial baseline |
-|---|---|
-| Distribution | Kali Linux |
-| Desktop | XFCE |
-| Window manager | `xfwm4` |
-| Display server | X11 |
-| Language | Python 3 |
-| UI toolkit | GTK 3 / PyGObject, initially |
-| Window integration | X11/EWMH; evaluate `libwnck` for window/workspace operations |
-| Packaging direction | Debian packages, eventually an APT repository |
+## Platform contract
 
-The initial scope is intentionally narrow. Wayland and other desktop environments are future compatibility targets, not current promises. Kali's desktop/display-server choices differ by desktop environment; this project specifically targets the XFCE/X11 session first.
+- Initial target: Kali Linux, XFCE, X11.
+- `xfwm4` remains authoritative for window management.
+- No automatic changes to XFCE settings, other gesture services, input permissions, or system files.
+- No GUI process should run as root.
+- Gesture listener startup is explicit; the default `kali-ux status` command is read-only.
+- Wayland and other desktop environments are future targets.
 
-## Product principles
+## Install for development
 
-- Work with the desktop environment; do not replace `xfwm4`.
-- Prefer existing desktop capabilities and standards over custom reinvention.
-- Keep features modular, independently configurable and testable.
-- Keep the core small. Do not introduce services, abstractions or dependencies without a concrete need.
-- Make system-level effects explicit and reversible.
-- Treat privacy and least privilege as product requirements.
-- Distinguish implemented, tested, manually verified and merely planned functionality.
-
-## Feature vision
-
-The longer-term suite may include:
-
-- SwipeSwitch: gesture-driven window switching, Show Desktop/restoration and Task View.
-- Snap Assist: discoverable window layouts and snapping assistance.
-- Window Overview: an overview of eligible open windows.
-- Shared Gesture Control: one arbitration point for gesture ownership.
-- Clipboard History: searchable, bounded and privacy-aware history.
-- Quick Panel: selected desktop controls in one focused surface.
-- Focus Tools: distraction-reduction utilities.
-- Application Launcher: improved application discovery and launching.
-- Window Peek and Layout Memory.
-- Control Center and Diagnostics.
-
-See [FEATURES.md](docs/FEATURES.md) for scope and status.
-
-## Repository status
-
-This is the initial foundation scaffold. The first engineering activity after reviewing these documents is the SwipeSwitch audit—not implementing every feature.
-
-The existing SwipeSwitch repository is:
-<https://github.com/derrick62/swipeswitch>
-
-The current project archive and prior development notes should be inspected as part of that audit. No claim is made here that the remote repository has been cloned, that the current working tree is identical to an earlier archive, or that all recent gesture changes are verified.
-
-## Quick start for contributors
-
-The foundation package is deliberately lightweight and does not import GTK or connect to X11 merely to display its version.
+Use a virtual environment for Python packaging, but install GTK bindings from the distribution packages:
 
 ```bash
+sudo apt update
+sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-wnck-3.0 libwnck-3-0 libinput-tools wmctrl xclip
 python3 -m venv .venv
 . .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
-pytest
-ruff check .
-python -m kali_ux --version
+python -m pip install -e '.[dev]'
 ```
 
-GTK/PyGObject, libwnck and X11 integration dependencies are expected to be installed through Kali/Debian packages when a feature actually needs them. Do not install system GTK bindings into Kali's externally managed Python environment with `sudo pip`.
+If the system Python GTK bindings are not visible inside the virtual environment, use the system Python for the desktop process or create the environment with `--system-site-packages`. Do not use `sudo pip`.
 
-## Documentation map
+```bash
+kali-ux init
+kali-ux status
+kali-ux features
+kali-ux swipeswitch   # explicit start; X11 + GTK3/libwnck + touchpad access required
+pytest
+```
 
-- [Product specification](docs/PRODUCT_SPECIFICATION.md) — vision, boundaries and product requirements.
-- [Roadmap](docs/ROADMAP.md) — staged delivery and exit criteria.
-- [Architecture](docs/ARCHITECTURE.md) — component boundaries and platform strategy.
-- [Feature inventory](docs/FEATURES.md) — requirements, priorities and status.
-- [Design principles](docs/DESIGN_PRINCIPLES.md) — interaction and visual language.
-- [Testing strategy](docs/TESTING.md) — test levels and acceptance evidence.
-- [Development guide](docs/DEVELOPMENT.md) — local workflow and contribution practices.
-- [Research notes](docs/RESEARCH.md) — evidence, assumptions and open questions.
-- [Security and privacy](docs/SECURITY_AND_PRIVACY.md) — permissions, data handling and threat considerations.
-- [Packaging guide](docs/PACKAGING.md) — Debian packaging direction.
-- [SwipeSwitch preliminary audit](docs/SWIPESWITCH_AUDIT_PRELIMINARY.md) — findings from the available 0.2.0 archive.
-- [Architecture decisions](docs/decisions/) — recorded decisions and unresolved choices.
+The suite does not install itself as an autostart item or enable a gesture provider. That should only be done after the user has validated the device, permissions, and conflicts on their machine.
 
-## Important project language
+## Configuration and data
 
-**Planned** means described in the product scope. **Implemented** means code exists. **Automated-tested** means relevant automated tests pass. **Manually verified** means the behaviour was exercised on a real target desktop and the result recorded. These labels are not interchangeable.
+- Config: `$XDG_CONFIG_HOME/kali-ux/config.json` (default `~/.config/kali-ux/config.json`)
+- Data: `$XDG_DATA_HOME/kali-ux` (default `~/.local/share/kali-ux`)
+- Cache: `$XDG_CACHE_HOME/kali-ux` (default `~/.cache/kali-ux`)
+- Runtime: `$XDG_RUNTIME_DIR/kali-ux`
 
-## License
+Clipboard history is in-memory only in this baseline. No clipboard text is written to logs or disk. Layout snapshots are only written after an explicit capture call and are stored with user-only permissions.
 
-The repository scaffold is marked MIT in `LICENSE`. Before public distribution, review the licensing of all reused code, dependencies, icons, artwork and any incorporated SwipeSwitch code. A parent project's license does not automatically relicense third-party assets or dependencies.
+## Project map
+
+```text
+src/kali_ux/
+  core/                  configuration, paths, feature registry
+  platform/              capability and command adapters
+  features/              independently bounded feature modules
+  control_center/        configuration-facing model
+  diagnostics/           read-only health reporting
+  ui/                    shared UI foundations (future GTK integration)
+docs/                    product, architecture, decisions, testing, packaging
+packaging/               Debian packaging notes and templates
+scripts/                 safe developer/release helpers
+```
+
+## Engineering approach
+
+Build the whole feature ecosystem as an integrated baseline, then polish feature-by-feature. Do not confuse a module stub with a finished user-facing feature. Every capability must be tested on real XFCE/X11, including multiple monitors, scaling, panels, fullscreen windows, workspaces, minimized windows, and input-device changes.
+
+See `docs/IMPLEMENTATION_STATUS.md`, `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`, `docs/TESTING.md`, `docs/SECURITY_AND_PRIVACY.md`, and `docs/DEVELOPMENT.md`.

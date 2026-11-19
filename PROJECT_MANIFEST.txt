@@ -1,58 +1,44 @@
-Kali UX foundation scaffold — generated 2026-11-19
-Includes a preliminary audit of the available SwipeSwitch 0.2.0 core-preview archive.
+KALI UX 0.2.0-alpha.1 — PROJECT MANIFEST
 
-.gitignore
-.pytest_cache/.gitignore
-.pytest_cache/CACHEDIR.TAG
-.pytest_cache/README.md
-.pytest_cache/v/cache/nodeids
-CHANGELOG.md
-LICENSE
-README.md
-debian/README.md
-docs/ARCHITECTURE.md
-docs/DESIGN_PRINCIPLES.md
-docs/DEVELOPMENT.md
-docs/FEATURES.md
-docs/PACKAGING.md
-docs/PRODUCT_SPECIFICATION.md
-docs/RESEARCH.md
-docs/ROADMAP.md
-docs/SECURITY_AND_PRIVACY.md
-docs/SWIPESWITCH_AUDIT_PRELIMINARY.md
-docs/TESTING.md
-docs/decisions/0001-project-scope.md
-docs/decisions/0002-modular-architecture.md
-docs/decisions/0003-platform-integration.md
-docs/decisions/0004-gesture-ownership.md
-docs/decisions/0005-ui-toolkit.md
-docs/decisions/0006-packaging-strategy.md
-docs/decisions/0007-swipe-switch-integration.md
-packaging/README.md
-pyproject.toml
-scripts/README.md
-src/kali_ux/__init__.py
-src/kali_ux/__main__.py
-src/kali_ux/__pycache__/__init__.cpython-313.pyc
-src/kali_ux/__pycache__/__main__.cpython-313.pyc
-src/kali_ux/__pycache__/cli.cpython-313.pyc
-src/kali_ux/cli.py
-src/kali_ux/control_center/README.md
-src/kali_ux/core/README.md
-src/kali_ux/diagnostics/README.md
-src/kali_ux/features/README.md
-src/kali_ux/features/clipboard_history/README.md
-src/kali_ux/features/focus_tools/README.md
-src/kali_ux/features/gesture_control/README.md
-src/kali_ux/features/launcher/README.md
-src/kali_ux/features/layout_memory/README.md
-src/kali_ux/features/quick_panel/README.md
-src/kali_ux/features/snap_assist/README.md
-src/kali_ux/features/window_overview/README.md
-src/kali_ux/features/window_peek/README.md
-src/kali_ux/features/window_switcher/README.md
-src/kali_ux/platform/README.md
-src/kali_ux/ui/README.md
-tests/README.md
-tests/unit/__pycache__/test_cli.cpython-313-pytest-9.0.2.pyc
-tests/unit/test_cli.py
+Product: Integrated Linux desktop enhancement suite
+Initial target: Kali Linux / XFCE / X11
+Window manager authority: xfwm4
+Language: Python >= 3.10
+UI toolkit baseline: GTK3 for existing SwipeSwitch integration
+Architecture: modular monolith with static feature registry
+
+FOUNDATION DOCUMENTATION
+- README.md
+- docs/PRODUCT_SPECIFICATION.md
+- docs/ROADMAP.md
+- docs/ARCHITECTURE.md
+- docs/FEATURES.md
+- docs/DESIGN_PRINCIPLES.md
+- docs/TESTING.md
+- docs/DEVELOPMENT.md
+- docs/PACKAGING.md
+- docs/SECURITY_AND_PRIVACY.md
+- docs/RESEARCH.md
+- docs/IMPLEMENTATION_STATUS.md
+- docs/VERIFICATION_REPORT.md
+- docs/decisions/*.md
+
+IMPLEMENTED MODULES
+- Shared XDG paths, config defaults, feature registry and capability report
+- SwipeSwitch v0.2.0 preview engine integrated under features/window_switcher/engine
+- Gesture routing contract (no automatic input capture)
+- Snap geometry service
+- Clipboard history model (in-memory only; no watcher)
+- Layout memory service
+- Desktop application discovery/launch service
+- XFCE focus-mode helper
+- XFCE quick-action adapters
+- Task View reuse
+- Control Center model
+- CLI diagnostics
+
+QUALITY STATUS
+- 26 passed, 1 skipped (PyGObject/libwnck unavailable), 3 xfailed (known SwipeSwitch acceptance discrepancies)
+- Python compilation, CLI smoke tests, wheel build and installation passed in build container
+- Live Kali desktop/touchpad validation not performed
+- No production .deb, autostart or systemd service included
