@@ -27,8 +27,10 @@ DX_RE = re.compile(r"\bdx\s*[=:]?\s*([+\-]?\d+(?:\.\d+)?)", re.I)
 DY_RE = re.compile(r"\bdy\s*[=:]?\s*([+\-]?\d+(?:\.\d+)?)", re.I)
 
 
-def parse_libinput_line(line: str) -> GestureEvent | None:
-    """Parse one libinput swipe line, tolerating optional sequence numbers."""
+def parse_libinput_line(
+    line: str, use_unaccelerated: bool = False
+) -> GestureEvent | None:
+    """Parse one libinput swipe line, optionally selecting raw movement deltas."""
     match = EVENT_RE.search(line)
     header = EVENT_HEADER_RE.search(line)
     if not match or not header:
@@ -40,10 +42,11 @@ def parse_libinput_line(line: str) -> GestureEvent | None:
 
     if kind == "UPDATE":
         tail = line[header.end() :]
-        pair = PAIR_RE.search(tail)
-        if pair:
-            # The first pair is the accelerated delta; a later pair in
-            # parentheses may be the unaccelerated delta.
+        pairs = list(PAIR_RE.finditer(tail))
+        if pairs:
+            # libinput prints accelerated movement first and may include an
+            # unaccelerated pair in parentheses afterwards.
+            pair = pairs[-1] if use_unaccelerated and len(pairs) > 1 else pairs[0]
             dx, dy = float(pair.group(1)), float(pair.group(2))
         else:
             xm, ym = DX_RE.search(tail), DY_RE.search(tail)
@@ -120,7 +123,7 @@ def detect_touchpad(configured: str = "auto") -> str:
 class LibinputListener:
     """Read swipe events from one device and deliver them to a callback."""
 
-    def __init__(self, device, fingers, callback, debug=False):
+    def __init__(self, device, fingers, callback, debug=False, use_unaccelerated=False):
         self.device = device
         if isinstance(fingers, int):
             self.fingers = {fingers}
@@ -131,6 +134,7 @@ class LibinputListener:
         if not self.fingers or any(value < 1 for value in self.fingers):
             raise ValueError("fingers must contain at least one positive finger count")
         self.callback, self.debug = callback, debug
+        self.use_unaccelerated = bool(use_unaccelerated)
         self._stop = threading.Event()
         self._thread = None
         self._process = None
@@ -174,7 +178,7 @@ class LibinputListener:
                     line = self._process.stdout.readline()
                     if line == "":
                         break
-                    event = parse_libinput_line(line)
+                    event = parse_libinput_line(line, self.use_unaccelerated)
                     if event is None or event.fingers not in self.fingers:
                         continue
                     if self.debug:

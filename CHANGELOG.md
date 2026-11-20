@@ -55,3 +55,12 @@ All notable project changes are recorded here. This file begins with the foundat
 - Replaced notebook tabs with GTK stack/sidebar navigation and added Features, Appearance, Gestures, Privacy, Diagnostics and About sections.
 - Gated feature controls using saved preferences and runtime availability; toggles do not start services or change system settings.
 - Added model/configuration regression tests and updated the development roadmap to put Control Center before SwipeSwitch integration.
+
+
+## Unreleased — shared gesture runtime increment
+
+- Connected SwipeSwitch to the shared in-process `GestureRouter`; the router owns one recognizer lifecycle and enforces feature ownership across gesture updates, completion and cancellation.
+- Added incremental four-finger workspace navigation with reversal handling and a short-flick fallback.
+- Wired the existing `use_unaccelerated` setting through the libinput parser and listener.
+- Added router ownership, controller integration, parser and workspace-step regression tests.
+- Kept input startup opt-in; `libinput debug-events` remains a diagnostic-source proof of concept pending live Kali acceptance.

@@ -5,10 +5,12 @@ import logging
 import os
 import signal
 
+from kali_ux.features.gesture_control.router import GestureRouter
+from kali_ux.platform.gtk import load_gtk3
+
 from .activator import activate_window
 from .config import load_config
 from .listener import LibinputListener, detect_touchpad
-from kali_ux.platform.gtk import load_gtk3
 
 
 def _imports():
@@ -52,7 +54,10 @@ def main(argv=None):
 
         tracker = WindowTracker(screen, cfg)
         switcher = SwitcherOverlay(Gtk, Gdk, cfg)
-        controller = SwipeSwitchController(screen, tracker, switcher, None, Gdk, cfg)
+        gesture_router = GestureRouter()
+        controller = SwipeSwitchController(
+            screen, tracker, switcher, None, Gdk, cfg, gesture_router=gesture_router
+        )
         task_view = TaskView(Gtk, Gdk, Pango, lambda window: activate_window(window, Gdk, log))
         controller.task_view = task_view
 
@@ -61,19 +66,24 @@ def main(argv=None):
             {3, 4},
             callback=lambda event: GLib.idle_add(controller.handle_event, event),
             debug=args.debug,
+            use_unaccelerated=cfg.use_unaccelerated,
         )
         listener.start()
+        # The runtime is explicitly enabled only when its input listener starts.
+        gesture_router.enabled = True
         GLib.timeout_add(250, lambda: (controller.check_timeout(), GLib.SOURCE_CONTINUE)[1])
 
         def reload_config(_signum, _frame):
             try:
                 new_config = load_config(args.config)
                 controller.update_config(new_config)
+                listener.use_unaccelerated = bool(new_config.use_unaccelerated)
                 log.info("Configuration reloaded")
             except Exception:
                 log.exception("Config reload failed; retaining current configuration")
 
         def shutdown(*_args):
+            gesture_router.enabled = False
             listener.stop()
             Gtk.main_quit()
 
@@ -83,6 +93,7 @@ def main(argv=None):
         signal.signal(signal.SIGTERM, shutdown)
         log.info("SwipeSwitch started; listening to %s (3- and 4-finger gestures)", device)
         Gtk.main()
+        gesture_router.enabled = False
         listener.stop()
         return 0
     except Exception as exc:

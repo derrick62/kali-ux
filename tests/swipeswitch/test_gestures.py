@@ -83,8 +83,11 @@ def test_new_begin_cancels_previous_unfinished_switch():
     recognizer.handle(event("update", 3, dx=-45))
     actions = recognizer.handle(event("begin", 4))
     assert [action.name for action in actions] == ["switch_cancel"]
-    assert recognizer.handle(event("update", 4, dx=-40)) == []
-    assert [action.name for action in recognizer.handle(event("end", 4))] == ["workspace"]
+    actions = recognizer.handle(event("update", 4, dx=-40))
+    assert [(action.name, action.direction, action.steps) for action in actions] == [
+        ("workspace", "left", 1)
+    ]
+    assert recognizer.handle(event("end", 4)) == []
 
 
 def test_timeout_cancels_switch_without_committing():
@@ -95,3 +98,23 @@ def test_timeout_cancels_switch_without_committing():
     actions = recognizer.check_timeout(1)
     assert [action.name for action in actions] == ["switch_cancel"]
     assert recognizer.handle(event("end", 3)) == []
+
+
+def test_four_finger_horizontal_swipe_moves_workspace_steps_incrementally():
+    recognizer = GestureRecognizer(threshold_px=20, step_px=40)
+    recognizer.handle(event("begin", 4))
+    actions = recognizer.handle(event("update", 4, dx=-130))
+    assert [(a.name, a.direction, a.steps) for a in actions] == [
+        ("workspace", "left", 3)
+    ]
+    assert recognizer.handle(event("end", 4)) == []
+
+
+def test_four_finger_horizontal_reversal_emits_reverse_workspace_steps():
+    recognizer = GestureRecognizer(threshold_px=20, step_px=40)
+    recognizer.handle(event("begin", 4))
+    recognizer.handle(event("update", 4, dx=-50))
+    actions = recognizer.handle(event("update", 4, dx=100))
+    workspace = [a for a in actions if a.name == "workspace"]
+    assert workspace[-1].direction == "right"
+    assert workspace[-1].steps == 2

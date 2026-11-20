@@ -15,7 +15,7 @@ Build a reliable vertical slice before expanding breadth. Every phase has a user
 - XDG configuration, diagnostics, GTK3 namespace loader and platform capability checks.
 - Security, privacy and packaging constraints.
 
-## Phase 1 — Control Center foundation (current)
+## Phase 1 — Control Center foundation (implemented; initial desktop smoke test reported working)
 
 **Purpose:** make the Control Center the coherent management surface for the suite without making it responsible for feature implementation.
 
@@ -36,7 +36,7 @@ Exit criteria:
 - Diagnostics explain missing requirements without collecting private data.
 - GTK UI is manually validated on Kali XFCE/X11 for scaling, keyboard navigation and interaction.
 
-## Phase 2 — SwipeSwitch integration and acceptance
+## Phase 2 — SwipeSwitch audit, integration and acceptance (next)
 
 **Purpose:** make SwipeSwitch a reliable feature inside the shared architecture.
 
@@ -101,4 +101,4 @@ For every increment: define behaviour and acceptance criteria; inspect constrain
 
 ## Current position
 
-The 0.3.0-alpha.3 baseline is retained. The first Control Center foundation increment is implemented in 0.3.0-alpha.4: model-backed feature preferences, capability-aware availability, atomic configuration writes, sidebar navigation and feature-control gating. Automated tests pass in the build container. Live GTK interaction, accessibility, scaling and desktop-specific capability detection still require validation on the user's Kali XFCE/X11 system. SwipeSwitch integration/acceptance follows after this Control Center milestone is verified.
+Kali UX 0.3.0-alpha.4 is the accepted working development baseline. The Control Center foundation is implemented: model-backed feature preferences, capability-aware availability, atomic configuration writes, sidebar navigation and feature-control gating. The user has reported that alpha.4 works as described on their Kali desktop. Further accessibility, scaling and edge-case checks remain useful, but the next major milestone is now the audit-first SwipeSwitch phase. See `BASELINE_CONSOLIDATION.md` for the consolidated handover and SwipeSwitch exit criteria.

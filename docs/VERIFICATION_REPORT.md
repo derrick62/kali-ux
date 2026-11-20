@@ -6,14 +6,15 @@
 ## Automated checks
 
 - Python source compilation: passed (`PYTHONPATH=src python -m compileall -q src tests`).
-- Automated suite: **46 passed, 1 skipped, 0 expected failures**.
+- Automated suite: **55 passed, 1 skipped, 0 expected failures**.
+- New coverage: lifecycle-aware router enablement and feature ownership, timeout/cancellation routing, controller integration, incremental four-finger workspace movement and reversal, and accelerated/unaccelerated libinput delta selection.
 - Skipped: libwnck tracker integration because the build container does not provide the required PyGObject/libwnck integration.
 - GTK namespace regression test: passed; the loader requests GTK 3, GDK 3, libwnck 3 and Pango 1.0 before importing GI namespaces.
 - Control Center model tests: passed for capability-aware availability, planned/unavailable feature rejection, disable behaviour, atomic persistence and private file permissions.
 - Configuration validation tests: passed, including rejection of non-boolean feature enabled values.
 - CLI version, feature listing and JSON status smoke tests: passed.
 - GUI module import without starting GTK: passed. Actual GTK rendering and interaction were not tested in this build container.
-- Wheel build: passed; `kali_ux-0.3.0a4-py3-none-any.whl` (SHA-256 `688cd38981b022d068f2c3e1b36717b8a4379f23d0a081c85357c1538b324c7b`); wheel metadata reports version 0.3.0a4.
+- Wheel build: passed; `kali_ux-0.3.0a4-py3-none-any.whl` (SHA-256 `8ab1c50df65a3878abba3302d02d6dafafc084a79eda0c91753330281c304f62`); wheel metadata reports version 0.3.0a4.
 - Ruff lint and formatting: not run because Ruff is unavailable in this build container.
 
 ## Not verified

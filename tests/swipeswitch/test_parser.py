@@ -41,3 +41,12 @@ def test_update_without_sequence_number_still_parses():
     )
     assert event is not None
     assert (event.dx, event.dy) == (-3.88, 0.55)
+
+
+def test_update_can_select_unaccelerated_pair():
+    line = (
+        "GESTURE_SWIPE_UPDATE +0.1s 3 "
+        "-12.5/+1.25 (-15.0/+2.5 unaccelerated)"
+    )
+    event = parse_libinput_line(line, use_unaccelerated=True)
+    assert (event.dx, event.dy) == (-15.0, 2.5)

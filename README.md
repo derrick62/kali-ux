@@ -8,8 +8,8 @@
 
 | Feature | Included baseline | Current limitation |
 |---|---|---|
-| SwipeSwitch | GTK3/libwnck switcher, Task View, gesture recognizer, desktop/workspace actions | Uses `libinput debug-events`; input ownership, permissions and real-device behaviour need target validation |
-| Shared Gesture Control | Normalized event contract and in-process router | No production input provider/arbitration daemon; disabled by default |
+| SwipeSwitch | GTK3/libwnck switcher, Task View, desktop actions and incremental four-finger workspace navigation | Uses `libinput debug-events`; input ownership, permissions and real-device behaviour need target validation |
+| Shared Gesture Control | One lifecycle-aware recognizer route with explicit feature ownership and cancellation | No production input provider; the opt-in listener still needs target-device validation |
 | Window Overview | Reuses the GTK3 SwipeSwitch Task View | Needs real desktop focus, dismissal and keyboard testing |
 | Snap Assist | Eight geometry presets via `wmctrl`, using the active window monitor work area | No preview UI; `xfwm4` geometry acceptance and multi-monitor behaviour need live testing |
 | Clipboard History | Opt-in GTK clipboard watcher, bounded in-memory history, search, copy-back and clear | Session-only; app exclusions are not implemented and sensitive values cannot be reliably detected |
@@ -68,7 +68,7 @@ scripts/                 safe developer/release helpers
 
 Build a reliable vertical slice, then implement and verify additional features one at a time. Do not confuse a service prototype with a finished user-facing feature. Every desktop capability must be tested on real XFCE/X11, including multiple monitors, scaling, panels, fullscreen windows, workspaces, minimized windows, and input-device changes.
 
-See `docs/REVIEW_REPORT.md` for the latest source review, plus `docs/IMPLEMENTATION_STATUS.md`, `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`, `docs/TESTING.md`, `docs/SECURITY_AND_PRIVACY.md`, and `docs/DEVELOPMENT.md`.
+See `docs/BASELINE_CONSOLIDATION.md` for the current project handover and `docs/SWIPESWITCH_CURRENT_SOURCE_AUDIT.md` for the alpha.4 SwipeSwitch source assessment and next proof-of-concept steps. Also see `docs/REVIEW_REPORT.md`, `docs/IMPLEMENTATION_STATUS.md`, `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`, `docs/TESTING.md`, `docs/SECURITY_AND_PRIVACY.md`, and `docs/DEVELOPMENT.md`.
 
 ## Interactive Control Center prototype
 

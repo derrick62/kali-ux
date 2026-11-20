@@ -115,8 +115,8 @@ Touchpad / supported input source
 Separate:
 - **Acquisition:** how events are obtained.
 - **Normalization:** convert raw lines/events into a stable internal model.
-- **Recognition:** classify finger count, direction, movement and lifecycle.
-- **Arbitration:** determine which feature owns a gesture.
+- **Recognition:** classify finger count, direction, movement and lifecycle. The router owns exactly one injected recognizer for the active gesture runtime.
+- **Arbitration:** the first recognised action claims the gesture for its feature owner; subsequent updates, commit or cancellation cannot be taken over by another feature.
 - **Action:** request the desktop operation.
 - **Presentation:** update GTK UI.
 

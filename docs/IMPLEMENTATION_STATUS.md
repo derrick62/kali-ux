@@ -16,7 +16,7 @@
 - **Focus Mode:** reversible request to XFCE notification do-not-disturb, retaining the previous value and preserving it if restoration fails.
 - **Layout Memory:** named, explicit window geometry capture and best-effort restore; snapshots omit window titles and are written atomically with user-only permissions.
 - **Diagnostics and configuration:** read-only platform capability report, model-backed feature status, validated settings and atomic owner-only configuration writes.
-- **Shared gesture contract:** normalized event model and in-process router. No production shared input provider is enabled.
+- **Shared gesture contract:** the in-process router now owns the recognizer lifecycle and routes recognised actions to one explicit feature owner. SwipeSwitch is the first consumer; the router remains disabled until the opt-in input listener starts.
 
 ## Engineering corrections in alpha.2, alpha.3 and alpha.4
 
@@ -38,6 +38,7 @@
 ## Known limitations — do not represent as complete
 
 - The SwipeSwitch input listener still uses `libinput debug-events`. It is a diagnostic command, not a proven stable production event API. Device ownership, permissions, coexistence with other gesture services and hardware behaviour require a proof of concept on target Kali.
+- The shared router currently has one consumer (SwipeSwitch). Additional gesture features must register through this router rather than start independent recognizers or listeners.
 - The libwnck tracker integration test is skipped in the build container because PyGObject/libwnck is unavailable there.
 - Task View focus/dismissal, window activation, gesture direction/feel and overlay behaviour need live XFCE/X11 validation.
 - Snap geometry uses monitor work areas when available, but window-manager constraints, fractional scaling, panels and unusual monitor layouts still need live testing.
