@@ -1,6 +1,6 @@
 # Kali UX — Research Notes and Technical Constraints
 
-**Date:** 2026-11-19  
+**Date:** 2026-11-19
 **Purpose:** Record the evidence behind the initial platform and engineering choices. This is not a substitute for testing the actual target laptop.
 
 ## 1. Kali desktop and display-server context
@@ -66,7 +66,7 @@ An earlier SwipeSwitch specification described a Python/GTK3 application using l
 
 Subsequent work expanded the agreed gesture contract to include four-finger workspace navigation, three-finger Show Desktop/restoration and three-finger Task View. The older v2.1 document explicitly excluded these actions; that exclusion is obsolete and must not be carried forward.
 
-Historical development notes indicate a v0.2.0 core preview with six behaviours represented in source, but verification was incomplete and a test run had outstanding failures. This is not a current verified assessment. The audit must inspect the actual archive/repository and run tests again.
+The supplied 0.3.0-alpha.2 archive was subsequently inspected. The six agreed gesture routes are represented in the live recognizer and controller, and automated tests now cover the gesture lifecycle. The event source is still `libinput debug-events`; no conclusion about production suitability or real touchpad behaviour is claimed until the target-machine proof of concept is complete.
 
 ## 7. Risks and mitigations
 

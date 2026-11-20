@@ -1,10 +1,11 @@
 """Pure, desktop-independent recognition for SwipeSwitch gestures."""
+
 from __future__ import annotations
 
-from dataclasses import dataclass
 import time
+from dataclasses import dataclass
 
-from .state import GestureEvent
+from .events import GestureEvent
 
 
 @dataclass(frozen=True)
@@ -23,8 +24,9 @@ class GestureRecognizer:
     A gesture is classified once; it can never be routed to two features.
     """
 
-    def __init__(self, threshold_px: float = 35, step_px: float = 80,
-                 horizontal_dominance: float = 1.25):
+    def __init__(
+        self, threshold_px: float = 35, step_px: float = 80, horizontal_dominance: float = 1.25
+    ):
         self.threshold_px = float(threshold_px)
         self.step_px = float(step_px)
         self.horizontal_dominance = float(horizontal_dominance)
@@ -44,15 +46,26 @@ class GestureRecognizer:
     def handle(self, event: GestureEvent) -> list[GestureAction]:
         actions: list[GestureAction] = []
         if event.kind == "begin":
+            # A new BEGIN before the previous END means the old sequence was
+            # interrupted. Close any visible switcher before accepting it.
+            if self.fingers == 3 and self.axis == "horizontal":
+                actions.append(GestureAction("switch_cancel", 3, self.direction))
             self.reset()
+            if event.fingers not in (3, 4):
+                return actions
             self.fingers = event.fingers
             self.started_at = time.monotonic()
             self.last_activity = self.started_at
             return actions
 
-        if event.fingers != self.fingers or self.fingers not in (3, 4):
-            if event.kind == "end":
-                self.reset()
+        if self.fingers not in (3, 4):
+            return actions
+        if event.fingers != self.fingers:
+            # Finger-count changes invalidate the current gesture immediately;
+            # do not leave an overlay waiting for the timeout to expire.
+            if self.fingers == 3 and self.axis == "horizontal":
+                actions.append(GestureAction("switch_cancel", 3, self.direction))
+            self.reset()
             return actions
 
         if event.kind == "update":
@@ -92,8 +105,11 @@ class GestureRecognizer:
             elif self.axis == "horizontal" and self.fingers == 4:
                 actions.append(GestureAction("workspace", 4, self.direction))
             elif self.axis == "vertical" and self.fingers == 3:
-                actions.append(GestureAction("task_view" if self.direction == "up"
-                                             else "show_desktop", 3, self.direction))
+                actions.append(
+                    GestureAction(
+                        "task_view" if self.direction == "up" else "show_desktop", 3, self.direction
+                    )
+                )
             elif self.axis == "horizontal" and self.fingers == 3:
                 actions.append(GestureAction("switch_commit", 3, self.direction))
             self.reset()

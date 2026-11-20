@@ -1,10 +1,9 @@
-Kali UX 0.3.0-alpha.1 — interactive prototype
+Kali UX 0.3.0-alpha.3 — interactive engineering prototype
 
-Core: XDG configuration/path handling, configuration defaults, feature registry, platform capability checks, safe command execution, diagnostics.
+Core: XDG configuration/path handling, feature registry, platform capability checks, synchronous and detached command adapters, explicit GTK3 namespace loader, diagnostics.
 UI: GTK3 Control Center with Overview, Windows, Clipboard, Applications, Productivity and Settings.
-Features: SwipeSwitch, Task View, gesture routing contract, snap presets, clipboard history, application launcher, XFCE quick settings, focus mode, layout memory.
-Docs: architecture, product specification, roadmap, feature inventory, design principles, development, testing, privacy/security, packaging, SwipeSwitch audit and original SwipeSwitch documents.
-Tests: 27 passed, 1 skipped, 3 expected failures in the build container.
-Packaging: setuptools source project and Python wheel in dist/.
+Features: SwipeSwitch gesture recognizer, Task View, gesture routing contract, snap presets, clipboard history, application launcher, XFCE quick settings, focus mode and layout memory.
+Docs: source review report, product specification, architecture, roadmap, feature inventory, design principles, development, testing, privacy/security, packaging, verification and SwipeSwitch audit/history.
+Tests: 41 passed, 1 skipped, 0 expected failures in the build container. Ruff lint and formatting checks are included in scripts/check.sh; they were not run in the review container because Ruff was unavailable.
 
-Not implemented/verified: live desktop acceptance, production shared gesture input provider, compositor-aware screenshots/previews, Wayland, fully panel-aware multi-monitor snapping, persistent clipboard history, automatic startup or privileged installation.
+Not implemented/verified: live desktop acceptance, production shared gesture input provider, compositor-aware screenshots/previews, Wayland, full workspace/monitor layout restoration, persistent clipboard history, automatic startup or privileged installation.

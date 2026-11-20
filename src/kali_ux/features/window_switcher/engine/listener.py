@@ -1,4 +1,5 @@
 """Touchpad discovery and a restartable libinput debug-events listener."""
+
 from __future__ import annotations
 
 import logging
@@ -8,7 +9,7 @@ import subprocess
 import threading
 from collections.abc import Iterable
 
-from .state import GestureEvent
+from .events import GestureEvent
 
 log = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ def parse_libinput_line(line: str) -> GestureEvent | None:
     dx = dy = 0.0
 
     if kind == "UPDATE":
-        tail = line[header.end():]
+        tail = line[header.end() :]
         pair = PAIR_RE.search(tail)
         if pair:
             # The first pair is the accelerated delta; a later pair in
@@ -110,7 +111,8 @@ def detect_touchpad(configured: str = "auto") -> str:
     if len(candidates) > 1:
         log.warning(
             "Multiple gesture-capable pointer devices found; selected %s (%s)",
-            candidates[0][2], candidates[0][1],
+            candidates[0][2],
+            candidates[0][1],
         )
     return candidates[0][1]
 
@@ -137,9 +139,7 @@ class LibinputListener:
         if self._thread and self._thread.is_alive():
             return
         self._stop.clear()
-        self._thread = threading.Thread(
-            target=self._run, name="swipeswitch-libinput", daemon=True
-        )
+        self._thread = threading.Thread(target=self._run, name="swipeswitch-libinput", daemon=True)
         self._thread.start()
 
     def stop(self):
@@ -180,7 +180,10 @@ class LibinputListener:
                     if self.debug:
                         log.debug(
                             "Gesture %s fingers=%d dx=%.2f dy=%.2f",
-                            event.kind, event.fingers, event.dx, event.dy,
+                            event.kind,
+                            event.fingers,
+                            event.dx,
+                            event.dy,
                         )
                     try:
                         self.callback(event)

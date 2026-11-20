@@ -1,4 +1,5 @@
 """XFCE/X11 virtual-workspace navigation through libwnck."""
+
 from __future__ import annotations
 
 import logging

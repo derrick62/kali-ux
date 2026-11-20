@@ -1,21 +1,52 @@
 """Pre-created GTK3 switcher overlay."""
+
 import logging
+
 from gi.repository import Pango
 
 log = logging.getLogger(__name__)
 
 DARK_CSS = """
-window#swipeswitch-overlay { background-color: rgba(12, 15, 22, 0.88); }
-.frame { background-color: rgba(28, 33, 45, 0.96); border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; padding: 14px; }
-.card { background-color: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; min-width: 132px; min-height: 106px; }
-.card.selected { background-color: rgba(55,112,220,0.24); border: 2px solid #6ea8ff; }
+window#swipeswitch-overlay {
+    background-color: rgba(12, 15, 22, 0.88);
+}
+.frame {
+    background-color: rgba(28, 33, 45, 0.96);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 16px;
+    padding: 14px;
+}
+.card {
+    background-color: rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 12px;
+    min-width: 132px;
+    min-height: 106px;
+}
+.card.selected {
+    background-color: rgba(55,112,220,0.24);
+    border: 2px solid #6ea8ff;
+}
 .title { color: #f3f5f8; font-size: 12px; }
 .icon { color: #dce6f5; font-size: 28px; }
 """
 LIGHT_CSS = """
 window#swipeswitch-overlay { background-color: rgba(25,30,40,0.55); }
-.frame { background-color: rgba(245,247,250,0.98); border: 1px solid #d6dce5; border-radius: 16px; padding: 14px; }
-.card { background-color: #fff; border: 1px solid #dce2ea; border-radius: 12px; padding: 12px; min-width: 132px; min-height: 106px; }
+.frame {
+    background-color: rgba(245,247,250,0.98);
+    border: 1px solid #d6dce5;
+    border-radius: 16px;
+    padding: 14px;
+}
+.card {
+    background-color: #fff;
+    border: 1px solid #dce2ea;
+    border-radius: 12px;
+    padding: 12px;
+    min-width: 132px;
+    min-height: 106px;
+}
 .card.selected { background-color: #e5efff; border: 2px solid #2878e8; }
 .title { color: #18202c; font-size: 12px; }
 .icon { color: #315b91; font-size: 28px; }
@@ -55,7 +86,8 @@ class SwitcherOverlay:
         try:
             self.css.load_from_data(css.encode())
             self.Gtk.StyleContext.add_provider_for_screen(
-                self.screen, self.css, self.Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+                self.screen, self.css, self.Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            )
         except Exception:
             log.exception("Could not apply overlay CSS")
 
@@ -88,7 +120,7 @@ class SwitcherOverlay:
             width = min(760, geo.width - 60)
             height = min(190, geo.height - 60)
             self.window.set_default_size(width, height)
-            self.window.move(geo.x + (geo.width-width)//2, geo.y + (geo.height-height)//2)
+            self.window.move(geo.x + (geo.width - width) // 2, geo.y + (geo.height - height) // 2)
         except Exception:
             self.window.set_position(self.Gtk.WindowPosition.CENTER)
 

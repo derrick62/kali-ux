@@ -23,3 +23,24 @@ All notable project changes are recorded here. This file begins with the foundat
 - Preserved the original SwipeSwitch documentation under `docs/swipeswitch/`.
 - Added installation and prototype-operation guides.
 - Explicitly retained the known SwipeSwitch acceptance failures and platform validation requirements.
+
+
+## 0.3.0-alpha.2 — Engineering remediation
+
+- Consolidated live gesture events into `events.py` and removed the unused legacy state machine.
+- Corrected reversal semantics and added cancellation for finger-count changes and interrupted gesture begins.
+- Added detached process launching for graphical applications so Control Center actions do not block or time out their child apps.
+- Hardened focus-mode restoration and layout snapshot validation, privacy and atomic writes.
+- Improved active-monitor work-area selection for Snap Assist.
+- Reformatted the Python codebase, resolved Ruff lint findings and expanded service/gesture tests.
+- Updated implementation, verification and development documentation to match the current source.
+
+
+## 0.3.0-alpha.3 — Baseline review corrections
+
+- Centralized GTK namespace loading and explicitly pinned GDK 3 alongside GTK 3, libwnck 3 and Pango 1.0 to prevent accidental GTK4/GDK4 selection.
+- Removed the unused legacy gesture state machine and its stale expected-failure tests; the live recognizer is the only gesture lifecycle implementation.
+- Added a regression test for the GTK namespace selection order.
+- Corrected release documentation and verification counts to match the source and actual test run.
+- Updated package metadata to use the SPDX `MIT` license identifier and a current setuptools build requirement.
+- Kept desktop integration limitations explicit; no live touchpad, compositor, multi-monitor or Debian package lifecycle acceptance is claimed.

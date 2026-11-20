@@ -1,12 +1,13 @@
 """Coordinates recognised gestures with desktop services and GTK views."""
+
 from __future__ import annotations
 
 import logging
 
+from .activator import activate_window
 from .desktop import DesktopVisibilityManager
 from .gestures import GestureRecognizer
 from .workspaces import WorkspaceManager
-from .activator import activate_window
 
 log = logging.getLogger(__name__)
 

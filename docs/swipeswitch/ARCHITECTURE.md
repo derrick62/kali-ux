@@ -9,7 +9,7 @@ Keep input capture, gesture interpretation, desktop operations and presentation 
 | Component | Responsibility |
 |---|---|
 | `listener.py` | Discover the selected device, run libinput and emit parsed events |
-| Parser (`listener.py`) | Convert libinput text into normalised `GestureEvent` values |
+| Parser (`listener.py`) | Convert libinput text into normalised `GestureEvent` values from `events.py` |
 | Gesture recogniser | Track lifecycle, finger count, accumulated movement, direction, thresholds, cancellation and timeout |
 | `gestures.py` / `controller.py` | Classify gestures and dispatch recognised actions to the correct desktop feature |
 | `tracker.py` / window service | Discover eligible windows, maintain MRU order and expose current desktop state |
@@ -56,3 +56,8 @@ Malformed input must not terminate the application. A failed thumbnail must not 
 ## Current implementation note
 
 The 0.2.0 core preview implements the primary gesture, controller, workspace, desktop-visibility and Task View boundaries. Some responsibilities may still be consolidated or refined after integration testing.
+
+
+## Alpha.2 consolidation note
+
+The unused legacy `GestureStateMachine` was removed. The live `GestureRecognizer` in `gestures.py` is the single gesture classifier, and the immutable `GestureEvent` contract lives in `events.py`. Tests now exercise that live path, including interrupted begins, finger-count changes, reversal and timeout cancellation.

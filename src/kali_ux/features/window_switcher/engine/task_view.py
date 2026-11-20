@@ -1,4 +1,5 @@
 """Simple persistent GTK3 window overview used by the Task View gesture."""
+
 from __future__ import annotations
 
 import logging
@@ -26,12 +27,19 @@ class TaskView:
         self.provider.load_from_data(b"""
             window { background: rgba(15, 19, 28, 0.97); }
             .heading { color: #f5f7fb; font-size: 22px; font-weight: 600; }
-            button.task-card { background: #252d3c; color: #f5f7fb; border: 1px solid #414c60; border-radius: 12px; padding: 14px; }
+            button.task-card {
+                background: #252d3c;
+                color: #f5f7fb;
+                border: 1px solid #414c60;
+                border-radius: 12px;
+                padding: 14px;
+            }
             button.task-card:hover { background: #34445e; border-color: #79aaff; }
             label.task-title { color: #f5f7fb; }
         """)
         self.window.get_style_context().add_provider(
-            self.provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+            self.provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
         self.root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
         self.root.set_border_width(24)
         heading = Gtk.Label(label="Open windows")

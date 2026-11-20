@@ -1,20 +1,30 @@
 import pytest
+
 pytest.importorskip("gi", reason="Tracker integration requires system PyGObject/libwnck bindings")
 from kali_ux.features.window_switcher.engine.config import Config
 from kali_ux.features.window_switcher.engine.tracker import WindowTracker
 
 
 class FakeScreen:
-    def get_active_workspace(self): return 0
+    def get_active_workspace(self):
+        return 0
 
 
 class FakeWindow:
     def __init__(self, xid, workspace=0, skip=False):
         self.xid, self.workspace, self.skip = xid, workspace, skip
-    def get_xid(self): return self.xid
-    def get_workspace(self): return self.workspace
-    def is_skip_tasklist(self): return self.skip
-    def get_name(self): return "Test"
+
+    def get_xid(self):
+        return self.xid
+
+    def get_workspace(self):
+        return self.workspace
+
+    def is_skip_tasklist(self):
+        return self.skip
+
+    def get_name(self):
+        return "Test"
 
 
 def test_mru_move_front():

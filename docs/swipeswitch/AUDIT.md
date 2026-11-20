@@ -1,6 +1,6 @@
 # SwipeSwitch — Technical Audit and Core Preview Status
 
-**Audit basis:** initial source archive and integrated core-preview source, inspected 18 November 2026.  
+**Audit basis:** initial source archive and integrated core-preview source, inspected 18 November 2026.
 **Execution status:** static inspection only; the application and test suite were not executed as part of this audit.
 
 ## Keep
@@ -48,3 +48,22 @@ The 0.2.0 core preview adds `gestures.py`, `controller.py`, `workspaces.py`, `de
 ## Outstanding verification
 
 No automated test result is claimed. Run the documented test suite in the target development environment, then perform a live X11/Kali/XFCE check. Verify device auto-detection against the actual `libinput list-devices` output and verify permissions without running SwipeSwitch as root.
+
+
+## Follow-up source remediation — 19 November 2026
+
+The integrated Kali UX archive was reviewed and modified after the preliminary audit. This is a source-level engineering pass, not live desktop verification.
+
+- Removed the unused `GestureStateMachine` implementation and its stale tests; moved the shared immutable `GestureEvent` contract into `events.py`.
+- Fixed the reversal acceptance expectation to reflect cumulative movement: reversing from one leftward step to one net rightward step crosses two step boundaries.
+- Added immediate switcher cancellation when finger count changes or a new BEGIN interrupts an active sequence.
+- Added tests for reversal, interrupted begins, finger-count changes and timeout cancellation.
+- Fixed blocking GUI process launches, focus-mode state recovery, snap request sequencing and layout snapshot privacy/atomicity.
+- Current automated result after the alpha.3 cleanup: 41 passed, 1 skipped, 0 expected failures. Ruff was unavailable in the review container, so lint and formatting are not claimed here.
+
+The remaining skipped tracker test and all GTK/libwnck/input/xfwm4 behaviour still require a real Kali XFCE/X11 session. `libinput debug-events` remains a proof-of-concept input source, not a production-approved provider.
+
+
+## Alpha.3 startup correction
+
+GTK namespace loading is now shared through `kali_ux.platform.gtk.load_gtk3()`. It explicitly requests GTK 3, GDK 3, libwnck 3 and Pango 1.0 before importing namespaces, preventing the unversioned GDK import from selecting GDK 4 in a GTK3 process.

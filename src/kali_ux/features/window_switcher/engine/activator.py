@@ -1,4 +1,5 @@
 """Window activation, with wmctrl fallback."""
+
 import logging
 import shutil
 import subprocess
@@ -17,8 +18,9 @@ def activate_window(window, Gdk, logger=None):
         logger.warning("Wnck activation failed: %s", exc)
         try:
             if shutil.which("wmctrl"):
-                subprocess.run(["wmctrl", "-i", "-a", hex(int(window.get_xid()))],
-                               check=True, timeout=2)
+                subprocess.run(
+                    ["wmctrl", "-i", "-a", hex(int(window.get_xid()))], check=True, timeout=2
+                )
                 return True
         except Exception as fallback_exc:
             logger.error("wmctrl fallback failed: %s", fallback_exc)

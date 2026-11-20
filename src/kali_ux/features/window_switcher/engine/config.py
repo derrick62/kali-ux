@@ -2,19 +2,28 @@ from __future__ import annotations
 
 import logging
 import os
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from pathlib import Path
 
 log = logging.getLogger(__name__)
 
 DEFAULTS = {
-    "fingers": 3, "step_px": 80, "show_threshold_px": 35,
-    "flick_min_px": 40, "invert_direction": False,
-    "current_workspace_only": True, "order": "mru",
-    "gesture_timeout": 3.0, "use_unaccelerated": False,
-    "touchpad_device": "auto", "thumbnails": False,
-    "thumb_budget_ms": 150, "theme": "dark", "monitor": "primary",
+    "fingers": 3,
+    "step_px": 80,
+    "show_threshold_px": 35,
+    "flick_min_px": 40,
+    "invert_direction": False,
+    "current_workspace_only": True,
+    "order": "mru",
+    "gesture_timeout": 3.0,
+    "use_unaccelerated": False,
+    "touchpad_device": "auto",
+    "thumbnails": False,
+    "thumb_budget_ms": 150,
+    "theme": "dark",
+    "monitor": "primary",
 }
+
 
 @dataclass
 class Config:
@@ -53,7 +62,11 @@ class Config:
 
 
 def default_config_path():
-    return Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "swipeswitch" / "config.toml"
+    return (
+        Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+        / "swipeswitch"
+        / "config.toml"
+    )
 
 
 def _default_text():

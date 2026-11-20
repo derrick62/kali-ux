@@ -33,13 +33,13 @@ Do not use `sudo pip`. Do not work around Kali's externally managed Python envir
 ```bash
 git clone https://github.com/derrick62/kali-ux.git
 cd kali-ux
-python3 -m venv .venv
+python3 -m venv --system-site-packages .venv
 . .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-The GitHub URL above is a proposed future repository location, not a claim that the repository has already been created. Until it exists, use the local project directory or the actual remote URL selected by the maintainer.
+The repository remote in the supplied checkout is `https://github.com/derrick62/kali-ux.git`. If you use a fork, replace the clone URL with your fork's address.
 
 ## 4. Useful commands
 
@@ -111,4 +111,4 @@ When behaviour changes, update the product specification and tests. When archite
 
 ## 11. Current next task
 
-The next task is the SwipeSwitch audit. Obtain the current source/archive, inspect it component by component, run its existing tests unchanged first, and write the audit report before refactoring. Do not implement the full Kali UX roadmap during the audit.
+The first source audit and a focused remediation pass are complete. The current test baseline is recorded in `docs/VERIFICATION_REPORT.md`. The next task is target-machine verification on Kali XFCE/X11: confirm the selected touchpad and permissions, capture real gesture event fixtures, test all six gestures and cancellation, and verify snap geometry, Task View focus/dismissal, clipboard ownership and XFCE notification restoration. Do not enable automatic startup or change other gesture services during these tests.

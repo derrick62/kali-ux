@@ -1,6 +1,6 @@
 # Kali UX — Architecture Specification
 
-**Status:** Initial logical architecture. Interfaces and implementation details remain subject to the SwipeSwitch audit and platform experiments.
+**Status:** Architecture baseline for the 0.3.0-alpha.3 prototype. Some planned adapter boundaries remain future work and must be validated against the target desktop.
 
 ## 1. Architectural approach
 
@@ -46,35 +46,38 @@ Provide explicit interfaces for capabilities such as window enumeration, window 
 
 ```text
 src/kali_ux/
-  __init__.py
-  __main__.py
-  cli.py
+  __init__.py / __main__.py / cli.py
   core/
-    config/
-    lifecycle/
-    logging/
-    modules/
-    services/
+    config.py
+    paths.py
+    registry.py
   platform/
-    base/
-    x11/
-    xfce/
-    input/
+    capabilities.py
+    commands.py
+    gtk.py
   ui/
-    gtk/
+    app.py
   features/
-    window_switcher/
-    snap_assist/
-    window_overview/
-    gesture_control/
-    clipboard_history/
-    quick_panel/
-    focus_tools/
-    launcher/
-    window_peek/
-    layout_memory/
-  control_center/
-  diagnostics/
+    window_switcher/engine/
+      events.py, listener.py, gestures.py, controller.py
+      tracker.py, activator.py, workspaces.py, desktop.py
+      overlay.py, task_view.py, config.py, thumbs.py
+    gesture_control/router.py
+    snap_assist/service.py
+    window_overview/service.py
+    clipboard_history/service.py
+    quick_panel/actions.py
+    focus_tools/service.py
+    launcher/service.py
+    window_peek/service.py
+    layout_memory/service.py
+  control_center/model.py
+  diagnostics/report.py
+
+tests/
+docs/
+packaging/
+scripts/
 ```
 
 Create implementation packages only when code exists. Feature folders may initially contain concise README files defining scope and status. Do not fill the repository with empty Python modules or speculative abstractions.
@@ -125,14 +128,9 @@ Existing tools such as `libinput-gestures` or Touchégg may already own gestures
 
 ## 6. SwipeSwitch integration boundary
 
-SwipeSwitch currently exists as a separate repository. The first step is audit, not a blind copy or rewrite.
+SwipeSwitch originated as a separate project and is now integrated under `features/window_switcher/engine/`. Its original design and development notes remain under `docs/swipeswitch/`, and its source boundaries remain explicit. The integration was audit-first rather than a blind rewrite.
 
-After audit, choose one of:
-- Integrate its package as a feature module with a thin compatibility adapter.
-- Extract reusable domain logic into the Kali UX package while preserving the standalone project.
-- Keep it separately packaged and coordinate through a documented process boundary if isolation proves necessary.
-
-Do not decide this before inspecting current source, tests, license and packaging. Preserve the ability to release SwipeSwitch independently unless there is a clear reason to change that.
+The remaining long-term packaging decision is whether to retain the current integrated feature module, extract reusable domain logic into a separately reusable package while preserving the standalone project, or keep the runtime separately packaged if isolation proves necessary. Review the source license and release workflow before changing the current arrangement. Preserve the ability to release SwipeSwitch independently unless there is a clear reason to change that.
 
 ## 7. Threading and process model
 

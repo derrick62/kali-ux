@@ -1,8 +1,10 @@
+> **Historical preliminary audit:** this report predates the alpha.2 remediation. See `docs/swipeswitch/AUDIT.md` for the follow-up source review and current test result.
+
 # SwipeSwitch — Preliminary Audit Report
 
-**Audit date:** 2026-11-19  
-**Source inspected:** `swipeswitch-v0.2.0-core-preview.zip` from the project's prior conversation Library  
-**Source version:** 0.2.0 core preview  
+**Audit date:** 2026-11-19
+**Source inspected:** `swipeswitch-v0.2.0-core-preview.zip` from the project's prior conversation Library
+**Source version:** 0.2.0 core preview
 **Audit status:** Preliminary source inspection; live Kali/XFCE verification not performed.
 
 > This report describes the inspected archive only. It does not claim that the archive is identical to the current GitHub repository or the user's current working tree.

@@ -1,23 +1,18 @@
 """SwipeSwitch X11 application entry point."""
+
 import argparse
 import logging
 import os
 import signal
 
+from .activator import activate_window
 from .config import load_config
 from .listener import LibinputListener, detect_touchpad
-from .activator import activate_window
+from kali_ux.platform.gtk import load_gtk3
 
 
 def _imports():
-    try:
-        import gi
-        gi.require_version("Gtk", "3.0")
-        gi.require_version("Wnck", "3.0")
-        from gi.repository import Gdk, GLib, Gtk, Pango, Wnck
-        return Gdk, GLib, Gtk, Pango, Wnck
-    except (ImportError, ValueError) as exc:
-        raise RuntimeError("Install GTK/libwnck bindings: sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-wnck-3.0") from exc
+    return load_gtk3()
 
 
 def main(argv=None):
@@ -26,12 +21,16 @@ def main(argv=None):
     parser.add_argument("--config")
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)
-    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO,
-                        format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.DEBUG if args.debug else logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
     log = logging.getLogger("swipeswitch")
     try:
         if not os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"):
-            raise RuntimeError("SwipeSwitch currently requires an X11 session; Wayland is not supported.")
+            raise RuntimeError(
+                "SwipeSwitch currently requires an X11 session; Wayland is not supported."
+            )
         cfg = load_config(args.config)
         device = detect_touchpad(cfg.touchpad_device)
         Gdk, GLib, Gtk, Pango, Wnck = _imports()
@@ -46,21 +45,21 @@ def main(argv=None):
         if screen is None:
             raise RuntimeError("Could not connect to the X11 window manager.")
         screen.force_update()
-        from .tracker import WindowTracker
+        from .controller import SwipeSwitchController
         from .overlay import SwitcherOverlay
         from .task_view import TaskView
-        from .controller import SwipeSwitchController
+        from .tracker import WindowTracker
 
         tracker = WindowTracker(screen, cfg)
         switcher = SwitcherOverlay(Gtk, Gdk, cfg)
         controller = SwipeSwitchController(screen, tracker, switcher, None, Gdk, cfg)
-        task_view = TaskView(
-            Gtk, Gdk, Pango, lambda window: activate_window(window, Gdk, log)
-        )
+        task_view = TaskView(Gtk, Gdk, Pango, lambda window: activate_window(window, Gdk, log))
         controller.task_view = task_view
 
         listener = LibinputListener(
-            device, {3, 4}, callback=lambda event: GLib.idle_add(controller.handle_event, event),
+            device,
+            {3, 4},
+            callback=lambda event: GLib.idle_add(controller.handle_event, event),
             debug=args.debug,
         )
         listener.start()

@@ -1,6 +1,5 @@
-import pytest
+from kali_ux.features.window_switcher.engine.events import GestureEvent
 from kali_ux.features.window_switcher.engine.gestures import GestureRecognizer
-from kali_ux.features.window_switcher.engine.state import GestureEvent
 
 
 def event(kind, fingers, dx=0, dy=0, cancelled=False):
@@ -56,7 +55,6 @@ def test_ambiguous_diagonal_gesture_is_ignored():
     assert recognizer.handle(event("end", 3)) == []
 
 
-@pytest.mark.xfail(reason="Reversal step-count semantics are unresolved; preserve as an acceptance test.")
 def test_horizontal_reversal_changes_selection_direction():
     recognizer = GestureRecognizer(threshold_px=20, step_px=40)
     recognizer.handle(event("begin", 3))
@@ -65,4 +63,35 @@ def test_horizontal_reversal_changes_selection_direction():
     movement = [a for a in actions if a.name == "switch_move"]
     assert movement
     assert movement[-1].direction == "right"
-    assert movement[-1].steps == 1
+    # The pointer crossed back over the original left step and one step to
+    # the right, so two rightward selection steps correctly undo and reverse.
+    assert movement[-1].steps == 2
+
+
+def test_finger_count_change_cancels_active_switch_immediately():
+    recognizer = GestureRecognizer(threshold_px=20, step_px=40)
+    recognizer.handle(event("begin", 3))
+    recognizer.handle(event("update", 3, dx=-45))
+    actions = recognizer.handle(event("update", 4, dx=-10))
+    assert [action.name for action in actions] == ["switch_cancel"]
+    assert recognizer.handle(event("end", 4)) == []
+
+
+def test_new_begin_cancels_previous_unfinished_switch():
+    recognizer = GestureRecognizer(threshold_px=20, step_px=40)
+    recognizer.handle(event("begin", 3))
+    recognizer.handle(event("update", 3, dx=-45))
+    actions = recognizer.handle(event("begin", 4))
+    assert [action.name for action in actions] == ["switch_cancel"]
+    assert recognizer.handle(event("update", 4, dx=-40)) == []
+    assert [action.name for action in recognizer.handle(event("end", 4))] == ["workspace"]
+
+
+def test_timeout_cancels_switch_without_committing():
+    recognizer = GestureRecognizer(threshold_px=20, step_px=40)
+    recognizer.handle(event("begin", 3))
+    recognizer.handle(event("update", 3, dx=-45))
+    recognizer.last_activity -= 10
+    actions = recognizer.check_timeout(1)
+    assert [action.name for action in actions] == ["switch_cancel"]
+    assert recognizer.handle(event("end", 3)) == []

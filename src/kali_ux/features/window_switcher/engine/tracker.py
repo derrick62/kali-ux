@@ -1,5 +1,7 @@
 """Wnck-backed window filtering and application-maintained MRU ordering."""
+
 import logging
+
 from gi.repository import Wnck
 
 log = logging.getLogger(__name__)
@@ -62,7 +64,11 @@ class WindowTracker:
     def get_switchable_windows(self):
         self.screen.force_update()
         live = {self._xid(w): w for w in (self.screen.get_windows() or [])}
-        source = self._mru if self.config.order == "mru" else list(self.screen.get_windows_stacked() or [])
+        source = (
+            self._mru
+            if self.config.order == "mru"
+            else list(self.screen.get_windows_stacked() or [])
+        )
         result, seen = [], set()
         for window in source:
             xid = self._xid(window)
@@ -70,9 +76,12 @@ class WindowTracker:
             if current is None or xid in seen:
                 continue
             name = (current.get_name() or "").lower()
-            if (not self._eligible_type(current) or not self._is_on_current_workspace(current)
-                    or current.is_skip_tasklist()
-                    or name.startswith("swipeswitch")):
+            if (
+                not self._eligible_type(current)
+                or not self._is_on_current_workspace(current)
+                or current.is_skip_tasklist()
+                or name.startswith("swipeswitch")
+            ):
                 continue
             result.append(current)
             seen.add(xid)
@@ -81,8 +90,12 @@ class WindowTracker:
             if xid in seen:
                 continue
             name = (current.get_name() or "").lower()
-            if (self._eligible_type(current) and self._is_on_current_workspace(current)
-                    and not current.is_skip_tasklist() and not name.startswith("swipeswitch")):
+            if (
+                self._eligible_type(current)
+                and self._is_on_current_workspace(current)
+                and not current.is_skip_tasklist()
+                and not name.startswith("swipeswitch")
+            ):
                 result.append(current)
                 seen.add(xid)
         return result

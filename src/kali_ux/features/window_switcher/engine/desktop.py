@@ -1,4 +1,5 @@
 """Show Desktop snapshots that preserve the user's pre-existing window state."""
+
 from __future__ import annotations
 
 import logging

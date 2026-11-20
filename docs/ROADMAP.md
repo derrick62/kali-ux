@@ -170,4 +170,4 @@ For every milestone:
 
 ## Current position
 
-The foundation scaffold is being established. The next phase is **Phase 1: SwipeSwitch audit**. Do not skip directly to implementing all planned features.
+Phase 0 (product and engineering foundation) and Phase 1 (SwipeSwitch source audit) are complete for the supplied 0.3.0-alpha.2 archive. A focused source-remediation pass has consolidated the live gesture recognizer and improved process launching, focus-mode recovery, snapping, layout snapshot handling and automated tests. The next phase is **Phase 2: platform and gesture integration proof of concept** on the actual Kali XFCE/X11 machine. Do not enable automatic startup, change device permissions or modify existing gesture services as part of that proof of concept without explicit review.
