@@ -1,12 +1,12 @@
 # Implementation status — interactive prototype
 
-**Release:** 0.3.0-alpha.3
+**Release:** 0.3.0-alpha.4
 **Target:** Kali Linux / XFCE / X11
 **Verification environment:** Linux build container, not a live Kali desktop
 
 ## Interactive features now present
 
-- **Kali UX Control Center:** GTK3 desktop dashboard with Overview, Windows, Clipboard, Applications, Productivity and Settings pages.
+- **Kali UX Control Center:** GTK3 desktop dashboard with sidebar navigation for Overview, Features, Windows, Clipboard, Applications, Productivity, Appearance, Gestures, Privacy, Diagnostics and About. Feature preferences are managed through `ControlCenterModel`; controls are gated by saved preferences and detected availability.
 - **SwipeSwitch:** integrated GTK3/libwnck engine, command-line entry point, gesture recognizer, MRU window tracking, Task View, Show Desktop/restoration and workspace navigation.
 - **Window list:** enumerates normal task-list windows and requests activation.
 - **Snap Assist:** eight geometry presets requested through `wmctrl`; the Control Center targets the active window's monitor work area when GDK exposes it.
@@ -15,10 +15,10 @@
 - **Quick Settings:** starts installed XFCE display, sound, network, power and keyboard configuration tools without blocking the Control Center.
 - **Focus Mode:** reversible request to XFCE notification do-not-disturb, retaining the previous value and preserving it if restoration fails.
 - **Layout Memory:** named, explicit window geometry capture and best-effort restore; snapshots omit window titles and are written atomically with user-only permissions.
-- **Diagnostics and configuration:** read-only status, default config creation and explicit feature status.
+- **Diagnostics and configuration:** read-only platform capability report, model-backed feature status, validated settings and atomic owner-only configuration writes.
 - **Shared gesture contract:** normalized event model and in-process router. No production shared input provider is enabled.
 
-## Engineering corrections in alpha.2 and alpha.3
+## Engineering corrections in alpha.2, alpha.3 and alpha.4
 
 - Removed the unused legacy `state.py` implementation and moved the shared immutable event contract into `events.py`. The live `GestureRecognizer` is now the single source of gesture lifecycle behaviour.
 - Corrected the reversal acceptance test: cumulative movement can cross back over the original step and then move one further step, which correctly emits two reverse steps.
@@ -30,6 +30,10 @@
 - Reformatted Python source and tests and resolved the configured Ruff lint rules.
 - Alpha.3 centralizes PyGObject namespace loading and explicitly pins GTK 3, GDK 3, libwnck 3 and Pango 1.0 before importing them. This fixes the GTK3/GDK4 namespace collision found during target-machine startup.
 - Removed the stale legacy state-machine module and its two expected-failure tests; the live `GestureRecognizer` remains the single implementation under test.
+- Alpha.4 connects the GTK interface to `ControlCenterModel`, adds runtime capability-aware availability and separates maturity from enabled preference.
+- Feature preference writes now use same-directory temporary files, owner-only permissions and atomic replacement. Invalid non-boolean `enabled` settings are rejected.
+- Replaced the tabbed notebook with GTK stack/sidebar navigation and added dedicated Features, Appearance, Gestures, Privacy, Diagnostics and About sections.
+- Feature controls are enabled only when the feature is both enabled in configuration and available on the current platform. Feature toggles never start services or change system settings.
 
 ## Known limitations — do not represent as complete
 
@@ -46,4 +50,4 @@
 
 ## Automated verification
 
-The current build-container run records **41 passed, 1 skipped, 0 expected failures**. Ruff checks are part of `scripts/check.sh` but were not run in this review container because Ruff is unavailable. This does not constitute live desktop acceptance. See `docs/VERIFICATION_REPORT.md`.
+The current build-container run records **46 passed, 1 skipped, 0 expected failures**. Python bytecode compilation and wheel construction succeeded. Ruff checks are part of `scripts/check.sh` but were not run in this review container because Ruff is unavailable. The GTK UI has not been launched in a live desktop session from this build container; this does not constitute live desktop acceptance. See `docs/VERIFICATION_REPORT.md`.

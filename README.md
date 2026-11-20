@@ -2,7 +2,7 @@
 
 **Kali UX** is a modular desktop-experience suite for Kali Linux. The first target is XFCE on X11. It aims to bring useful, deliberate desktop interactions together while preserving Linux user control and leaving `xfwm4` as the window manager.
 
-> **Implementation status:** 0.3.0-alpha.3 engineering prototype. The repository includes a GTK3 Control Center, the integrated SwipeSwitch engine, and several working desktop-service prototypes. It is not yet a release-ready or live-verified desktop product. See `docs/IMPLEMENTATION_STATUS.md` for the exact boundary between implemented, tested and unverified behaviour.
+> **Implementation status:** 0.3.0-alpha.4 engineering prototype. The repository includes a GTK3 Control Center, the integrated SwipeSwitch engine, and several working desktop-service prototypes. It is not yet a release-ready or live-verified desktop product. See `docs/IMPLEMENTATION_STATUS.md` for the exact boundary between implemented, tested and unverified behaviour.
 
 ## Included features
 
@@ -18,7 +18,7 @@
 | Application Launcher | XDG desktop-entry discovery/search and launch through `gio` | No full custom launcher shell, icons or keyboard navigation yet |
 | Window Peek | Capability reporting | Screenshot capture deliberately not implemented |
 | Layout Memory | User-triggered geometry snapshots/restoration via `wmctrl` | Best-effort; does not guarantee workspace/monitor fidelity |
-| Control Center | GTK3 dashboard with Overview, Windows, Clipboard, Applications, Productivity and Settings pages | Prototype UI; accessibility, scaling and interaction polish remain |
+| Control Center | GTK3 sidebar dashboard with Overview, Features, Windows, Clipboard, Applications, Productivity, Appearance, Gestures, Privacy, Diagnostics and About; model-backed feature preferences | First management foundation; live accessibility, scaling and desktop interaction validation remain |
 | Diagnostics | Read-only platform capability report | More diagnostic probes and redaction review needed |
 
 ## Platform contract
@@ -78,7 +78,7 @@ After installing the project and the GTK/X11 system dependencies, launch the des
 kali-ux gui
 ```
 
-The UI provides working prototype interactions for window listing/activation, Task View, eight snap presets, opt-in in-memory clipboard history, application search/launch, XFCE quick settings, focus mode, layout snapshots and diagnostics. See `docs/PROTOTYPE_GUIDE.md` for behaviour and limitations. The application menu entry template is in `packaging/kali-ux.desktop`.
+The UI provides model-backed feature preferences and capability-aware controls, alongside prototype interactions for window listing/activation, Task View, eight snap presets, opt-in in-memory clipboard history, application search/launch, XFCE quick settings, focus mode, layout snapshots and diagnostics. Feature toggles change preferences only; they do not start background services or alter system settings. See `docs/PROTOTYPE_GUIDE.md` for behaviour and limitations. The application menu entry template is in `packaging/kali-ux.desktop`.
 
 The original SwipeSwitch design, gesture, architecture, testing and development notes are preserved under `docs/swipeswitch/` alongside the integrated project documentation.
 

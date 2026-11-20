@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -53,6 +55,8 @@ def load_config(path: Path | None = None) -> dict[str, Any]:
         for feature, settings in data["features"].items():
             if not isinstance(settings, dict):
                 raise ValueError(f"Feature configuration '{feature}' must be an object")
+            if "enabled" in settings and type(settings["enabled"]) is not bool:
+                raise ValueError(f"features.{feature}.enabled must be a boolean")
     if "clipboard" in data:
         for key, maximum in (("max_items", 500), ("max_item_bytes", 1048576)):
             value = data["clipboard"].get(key, DEFAULTS["clipboard"][key])
@@ -76,10 +80,35 @@ def load_config(path: Path | None = None) -> dict[str, Any]:
     return merged
 
 
-def write_default_config(path: Path | None = None) -> Path:
+def save_config(config: dict[str, Any], path: Path | None = None) -> Path:
+    """Atomically persist validated configuration with owner-only permissions."""
+    if not isinstance(config, dict) or type(config.get("version")) is not int:
+        raise ValueError("Configuration must be a versioned object")
     target = path or CONFIG_HOME / "config.json"
     target.parent.mkdir(parents=True, exist_ok=True)
-    if not target.exists():
-        target.write_text(json.dumps(DEFAULTS, indent=2) + "\n", encoding="utf-8")
+    payload = json.dumps(config, indent=2, sort_keys=True) + "\n"
+    fd, temporary_name = tempfile.mkstemp(prefix=f".{target.name}.", dir=target.parent)
+    temporary = Path(temporary_name)
+    try:
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        temporary.replace(target)
         target.chmod(0o600)
+    except Exception:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        temporary.unlink(missing_ok=True)
+        raise
+    return target
+
+
+def write_default_config(path: Path | None = None) -> Path:
+    target = path or CONFIG_HOME / "config.json"
+    if not target.exists():
+        save_config(json.loads(json.dumps(DEFAULTS)), target)
     return target

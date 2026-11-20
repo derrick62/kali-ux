@@ -7,8 +7,9 @@ change xfwm4 configuration, or start an input listener automatically.
 from __future__ import annotations
 
 import json
+import shutil
 
-from kali_ux.core.config import load_config, write_default_config
+from kali_ux.control_center.model import ControlCenterModel
 from kali_ux.core.paths import CONFIG_HOME
 from kali_ux.diagnostics.report import build_report
 from kali_ux.features.clipboard_history.service import ClipboardHistory
@@ -30,7 +31,9 @@ def _gtk():
 class KaliUXWindow:
     def __init__(self, Gtk, Gdk, GLib, Pango, Wnck):
         self.Gtk, self.Gdk, self.GLib, self.Pango, self.Wnck = Gtk, Gdk, GLib, Pango, Wnck
-        self.config = load_config()
+        self.model = ControlCenterModel()
+        self.config = self.model.config
+        self._feature_controls = {}
         clipboard_config = self.config.get("clipboard", {})
         self.clipboard = ClipboardHistory(
             max_items=clipboard_config.get("max_items", 50),
@@ -66,14 +69,30 @@ class KaliUXWindow:
         subtitle.get_style_context().add_class("muted")
         root.pack_start(subtitle, False, False, 0)
 
-        self.notebook = Gtk.Notebook()
-        root.pack_start(self.notebook, True, True, 0)
+        content = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=14)
+        root.pack_start(content, True, True, 0)
+        self.stack = Gtk.Stack()
+        self.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.stack.set_transition_duration(120)
+        self.sidebar = Gtk.StackSidebar()
+        self.sidebar.set_stack(self.stack)
+        self.sidebar.set_size_request(190, -1)
+        self.sidebar.get_style_context().add_class("navigation-sidebar")
+        content.pack_start(self.sidebar, False, False, 0)
+        content.pack_start(self.stack, True, True, 0)
+
         self._build_home()
+        self._build_features()
         self._build_windows()
         self._build_clipboard()
         self._build_launcher()
         self._build_productivity()
-        self._build_settings()
+        self._build_appearance()
+        self._build_gestures()
+        self._build_privacy()
+        self._build_diagnostics_page()
+        self._build_about()
+        self._apply_feature_preferences()
         footer = Gtk.Label(
             label=(
                 "Prototype · X11 / XFCE · Window manager remains xfwm4 · "
@@ -91,8 +110,10 @@ class KaliUXWindow:
         css = self.Gtk.CssProvider()
         css.load_from_data(b"""
             window { background: #171b24; color: #edf1f7; }
-            notebook, notebook > header { background: #202633; }
-            notebook tab { padding: 10px 16px; }
+            stack { background: transparent; }
+            .navigation-sidebar { background: #202633; border-radius: 10px; padding: 8px; }
+            .navigation-sidebar list { background: transparent; }
+            .navigation-sidebar row { border-radius: 7px; padding: 5px; }
             button { padding: 8px 12px; border-radius: 8px; }
             entry, textview, treeview { background: #242c3a; color: #edf1f7; }
             .panel {
@@ -108,17 +129,32 @@ class KaliUXWindow:
             self.Gdk.Screen.get_default(), css, self.Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
-    def _page(self, name):
-        box = self.Gtk.Box(orientation=self.Gtk.Orientation.VERTICAL, spacing=12)
-        box.set_border_width(16)
-        self.notebook.append_page(box, self.Gtk.Label(label=name))
-        return box
+    def _page(self, name, key=None):
+        page = self.Gtk.Box(orientation=self.Gtk.Orientation.VERTICAL, spacing=12)
+        page.set_border_width(16)
+        page.set_homogeneous(False)
+        self.stack.add_titled(page, key or name.lower().replace(" ", "-"), name)
+        return page
+
+    def show_page(self, key):
+        self.stack.set_visible_child_name(key)
 
     def _button(self, parent, label, callback, *args):
-        b = self.Gtk.Button(label=label)
-        b.connect("clicked", lambda *_: callback(*args))
-        parent.pack_start(b, False, False, 0)
-        return b
+        button = self.Gtk.Button(label=label)
+        button.connect("clicked", lambda *_: callback(*args))
+        parent.pack_start(button, False, False, 0)
+        return button
+
+    def _bind_feature_control(self, key, widget):
+        self._feature_controls.setdefault(key, []).append(widget)
+        return widget
+
+    def _apply_feature_preferences(self):
+        for key, widgets in self._feature_controls.items():
+            feature = self.model.get_feature(key)
+            active = feature["enabled"] and feature["available"]
+            for widget in widgets:
+                widget.set_sensitive(active)
 
     def _card(self, parent, title, description):
         box = self.Gtk.Box(orientation=self.Gtk.Orientation.VERTICAL, spacing=7)
@@ -136,7 +172,7 @@ class KaliUXWindow:
         return box
 
     def _build_home(self):
-        page = self._page("Overview")
+        page = self._page("Overview", "overview")
         self._card(
             page,
             "Your desktop, brought together",
@@ -148,16 +184,16 @@ class KaliUXWindow:
         items = [
             ("Window switching", "Open the SwipeSwitch interface", self.start_swipeswitch),
             ("Task View", "See and select open windows", self.show_task_view),
-            ("Snap Assist", "Arrange the active window", lambda: self.notebook.set_current_page(1)),
+            ("Snap Assist", "Arrange the active window", lambda: self.show_page("windows")),
             (
                 "Application launcher",
                 "Find and launch applications",
-                lambda: self.notebook.set_current_page(3),
+                lambda: self.show_page("applications"),
             ),
             (
                 "Clipboard history",
                 "Review recent copied text",
-                lambda: self.notebook.set_current_page(2),
+                lambda: self.show_page("clipboard"),
             ),
             ("Diagnostics", "Check desktop capabilities", self.show_diagnostics),
         ]
@@ -174,10 +210,173 @@ class KaliUXWindow:
             content.pack_start(d, False, False, 0)
             card.add(content)
             card.connect("clicked", lambda _b, f=cb: f())
+            feature_key = {
+                "Window switching": "window_switcher",
+                "Task View": "window_overview",
+                "Snap Assist": "snap_assist",
+                "Application launcher": "launcher",
+                "Clipboard history": "clipboard_history",
+            }.get(name)
+            if feature_key:
+                self._bind_feature_control(feature_key, card)
             grid.attach(card, i % 2, i // 2, 1, 1)
 
+    def _build_features(self):
+        page = self._page("Features", "features")
+        self._card(
+            page,
+            "Feature management",
+            "Enable only features that are implemented and whose requirements are "
+            "available on this desktop. Enabling a feature changes its preference; "
+            "it does not start background services or alter system settings.",
+        )
+        self.feature_rows = self.Gtk.Box(
+            orientation=self.Gtk.Orientation.VERTICAL, spacing=8
+        )
+        page.pack_start(self.feature_rows, True, True, 0)
+        self.render_features()
+
+    def render_features(self):
+        if not hasattr(self, "feature_rows"):
+            return
+        for child in self.feature_rows.get_children():
+            self.feature_rows.remove(child)
+        for feature in self.model.rows():
+            card = self.Gtk.Box(orientation=self.Gtk.Orientation.HORIZONTAL, spacing=12)
+            card.get_style_context().add_class("panel")
+            details = self.Gtk.Box(orientation=self.Gtk.Orientation.VERTICAL, spacing=4)
+            title = self.Gtk.Label(label=feature["title"])
+            title.set_halign(self.Gtk.Align.START)
+            title.set_markup(f"<b>{feature['title']}</b>")
+            description = self.Gtk.Label(label=feature["description"])
+            description.set_line_wrap(True)
+            description.set_halign(self.Gtk.Align.START)
+            description.get_style_context().add_class("muted")
+            status_text = (
+                f"Implementation: {feature['implementation'].title()} · "
+                f"Availability: {feature['state']}"
+            )
+            if feature["missing_requirements"]:
+                status_text += " · Missing: " + ", ".join(feature["missing_requirements"])
+            status = self.Gtk.Label(label=status_text)
+            status.set_halign(self.Gtk.Align.START)
+            status.get_style_context().add_class("muted")
+            details.pack_start(title, False, False, 0)
+            details.pack_start(description, False, False, 0)
+            details.pack_start(status, False, False, 0)
+            toggle = self.Gtk.Switch()
+            toggle.set_active(feature["enabled"])
+            toggle.set_sensitive(feature["can_enable"])
+            toggle.set_valign(self.Gtk.Align.CENTER)
+            toggle.connect(
+                "notify::active",
+                lambda widget, _pspec, key=feature["key"]: self.set_feature_enabled(
+                    key, widget.get_active(), widget
+                ),
+            )
+            card.pack_start(details, True, True, 0)
+            card.pack_end(toggle, False, False, 0)
+            self.feature_rows.pack_start(card, False, False, 0)
+        self.feature_rows.show_all()
+
+    def set_feature_enabled(self, key, enabled, widget):
+        try:
+            self.model.set_enabled(key, enabled)
+        except (KeyError, TypeError, ValueError, OSError) as exc:
+            current = self.model.get_feature(key)["enabled"]
+            widget.set_active(current)
+            self.notify(str(exc))
+            return
+        self.config = self.model.config
+        self.render_features()
+        self._apply_feature_preferences()
+        self.notify("Feature preference saved. No background service was started.")
+
+    def _build_appearance(self):
+        page = self._page("Appearance", "appearance")
+        self._card(
+            page,
+            "Visual preferences",
+            "Kali UX currently follows its built-in dark interface styling. A selectable "
+            "theme system and per-feature visual preferences will be introduced after "
+            "the Control Center layout is established.",
+        )
+        self._card(page, "Current interface", "Dark · GTK3 · System-native widgets")
+
+    def _build_gestures(self):
+        page = self._page("Gestures", "gestures")
+        self._card(
+            page,
+            "Gesture provider",
+            "Gesture input is not started automatically. Before selecting or enabling "
+            "a provider, Kali UX must verify device ownership, permissions and conflicts "
+            "with existing gesture tools.",
+        )
+        providers = [
+            name
+            for name in ("touchegg", "libinput-gestures", "fusuma", "gebaar")
+            if shutil.which(name)
+        ]
+        self._card(
+            page,
+            "Detected providers",
+            ", ".join(providers) if providers else "No supported external gesture provider detected.",
+        )
+        self._card(
+            page,
+            "Current status",
+            "Gesture recognition and routing foundations exist. Shared input capture, "
+            "provider selection and conflict resolution still require live validation.",
+        )
+        self._bind_feature_control(
+            "window_switcher", self._button(page, "Launch SwipeSwitch", self.start_swipeswitch)
+        )
+
+    def _build_privacy(self):
+        page = self._page("Privacy", "privacy")
+        self._card(
+            page,
+            "Clipboard history",
+            "Capture is opt-in and currently held in memory only. History is cleared "
+            "when Kali UX exits. No clipboard contents are written to logs.",
+        )
+        self._button(page, "Open clipboard controls", lambda: self.show_page("clipboard"))
+        self._card(
+            page,
+            "Data collection",
+            "Kali UX does not collect telemetry. Window capture and persistent clipboard "
+            "history are not implemented.",
+        )
+
+    def _build_diagnostics_page(self):
+        page = self._page("Diagnostics", "diagnostics")
+        self._card(
+            page,
+            "Desktop health",
+            "Review detected platform capabilities, feature requirements and known "
+            "integration limitations. Diagnostics are read-only.",
+        )
+        self._button(page, "View diagnostic report", self.show_diagnostics)
+        self._button(page, "Refresh detected capabilities", self.refresh_diagnostics)
+
+    def refresh_diagnostics(self):
+        self.model.refresh_capabilities()
+        self.render_features()
+        self.notify("Platform capability checks refreshed.")
+
+    def _build_about(self):
+        page = self._page("About", "about")
+        self._card(
+            page,
+            "Kali UX",
+            "A modular desktop-experience enhancement suite for Kali Linux. "
+            "The initial target is XFCE on X11, with xfwm4 remaining the authoritative window manager.",
+        )
+        self._button(page, "Show implementation status", self.show_status)
+        self._button(page, "Open configuration folder", self.open_config_folder)
+
     def _build_windows(self):
-        page = self._page("Windows")
+        page = self._page("Windows", "windows")
         self._card(
             page,
             "Window overview and snapping",
@@ -186,10 +385,15 @@ class KaliUXWindow:
         )
         row = self.Gtk.Box(spacing=8)
         page.pack_start(row, False, False, 0)
-        self._button(row, "Open Task View", self.show_task_view)
-        self._button(row, "Refresh window list", self.refresh_windows)
+        self._bind_feature_control(
+            "window_overview", self._button(row, "Open Task View", self.show_task_view)
+        )
+        self._bind_feature_control(
+            "window_overview", self._button(row, "Refresh window list", self.refresh_windows)
+        )
         self.window_list = self.Gtk.ListBox()
         self.window_list.set_selection_mode(self.Gtk.SelectionMode.NONE)
+        self._bind_feature_control("window_overview", self.window_list)
         scroll = self.Gtk.ScrolledWindow()
         scroll.set_min_content_height(170)
         scroll.add(self.window_list)
@@ -216,6 +420,7 @@ class KaliUXWindow:
         for i, p in enumerate(presets):
             b = self.Gtk.Button(label=p.replace("-", " ").title())
             b.connect("clicked", lambda _b, preset=p: self.snap_active(preset))
+            self._bind_feature_control("snap_assist", b)
             snapgrid.attach(b, i % 4, i // 4, 1, 1)
 
     def _screen(self):
@@ -294,7 +499,7 @@ class KaliUXWindow:
             self.notify(f"Task View unavailable: {exc}")
 
     def _build_clipboard(self):
-        page = self._page("Clipboard")
+        page = self._page("Clipboard", "clipboard")
         self._card(
             page,
             "Private clipboard history",
@@ -306,6 +511,7 @@ class KaliUXWindow:
         page.pack_start(bar, False, False, 0)
         self.capture_toggle = self.Gtk.CheckButton(label="Capture copied text during this session")
         self.capture_toggle.set_active(False)
+        self._bind_feature_control("clipboard_history", self.capture_toggle)
         bar.pack_start(self.capture_toggle, False, False, 0)
         self._button(bar, "Clear history", self.clear_clipboard)
         self.clip_query = self.Gtk.Entry()
@@ -361,7 +567,7 @@ class KaliUXWindow:
         self.render_clipboard()
 
     def _build_launcher(self):
-        page = self._page("Applications")
+        page = self._page("Applications", "applications")
         self._card(
             page,
             "Application launcher",
@@ -370,10 +576,12 @@ class KaliUXWindow:
         )
         self.app_search = self.Gtk.SearchEntry()
         self.app_search.set_placeholder_text("Search applications…")
+        self._bind_feature_control("launcher", self.app_search)
         page.pack_start(self.app_search, False, False, 0)
         self.app_list = self.Gtk.ListBox()
         scroll = self.Gtk.ScrolledWindow()
         scroll.add(self.app_list)
+        self._bind_feature_control("launcher", self.app_list)
         page.pack_start(scroll, True, True, 0)
         self.app_search.connect("search-changed", lambda *_: self.render_apps())
         self.render_apps()
@@ -406,7 +614,7 @@ class KaliUXWindow:
             self.notify(f"Launch requested: {entry.name}")
 
     def _build_productivity(self):
-        page = self._page("Productivity")
+        page = self._page("Productivity", "productivity")
         self._card(
             page,
             "Focus mode",
@@ -415,8 +623,12 @@ class KaliUXWindow:
         )
         row = self.Gtk.Box(spacing=8)
         page.pack_start(row, False, False, 0)
-        self._button(row, "Enable focus mode", self.enable_focus)
-        self._button(row, "Restore notifications", self.disable_focus)
+        self._bind_feature_control(
+            "focus_tools", self._button(row, "Enable focus mode", self.enable_focus)
+        )
+        self._bind_feature_control(
+            "focus_tools", self._button(row, "Restore notifications", self.disable_focus)
+        )
         self._card(
             page,
             "Quick Settings",
@@ -435,6 +647,7 @@ class KaliUXWindow:
                     else f"Could not start {k} settings; check optional packages."
                 ),
             )
+            self._bind_feature_control("quick_panel", b)
             grid.attach(b, i % 3, i // 3, 1, 1)
         self._card(
             page,
@@ -448,9 +661,15 @@ class KaliUXWindow:
         self.layout_name = entry
         row2 = self.Gtk.Box(spacing=8)
         page.pack_start(row2, False, False, 0)
-        self._button(row2, "Save current layout", self.capture_layout)
-        self._button(row2, "Restore selected layout", self.restore_layout)
+        self._bind_feature_control(
+            "layout_memory", self._button(row2, "Save current layout", self.capture_layout)
+        )
+        self._bind_feature_control(
+            "layout_memory", self._button(row2, "Restore selected layout", self.restore_layout)
+        )
         self.layout_combo = self.Gtk.ComboBoxText()
+        self._bind_feature_control("layout_memory", self.layout_combo)
+        self._bind_feature_control("layout_memory", self.layout_name)
         page.pack_start(self.layout_combo, False, False, 0)
         self.refresh_layouts()
 
@@ -485,31 +704,6 @@ class KaliUXWindow:
         count = self.layouts.restore(name) if name else 0
         self.notify(f"Requested geometry restoration for {count} window(s).")
 
-    def _build_settings(self):
-        page = self._page("Settings")
-        self._card(
-            page,
-            "Gesture integration",
-            "Gesture routing is intentionally not enabled automatically. SwipeSwitch "
-            "can start its own listener when explicitly launched. Before enabling a "
-            "shared provider, verify device ownership, permissions and conflicts "
-            "with existing gesture tools.",
-        )
-        self._button(page, "Start SwipeSwitch listener", self.start_swipeswitch)
-        self._button(page, "Open configuration folder", self.open_config_folder)
-        self._button(
-            page,
-            "Create default configuration",
-            lambda: self.notify(f"Configuration: {write_default_config()}"),
-        )
-        self._button(page, "Show implementation status", self.show_status)
-        self._card(
-            page,
-            "Privacy controls",
-            "Clipboard capture is opt-in and memory-only. No clipboard content is "
-            "logged or persisted. Window capture is not implemented. No telemetry is collected.",
-        )
-
     def open_config_folder(self):
         try:
             CONFIG_HOME.mkdir(parents=True, exist_ok=True)
@@ -530,7 +724,8 @@ class KaliUXWindow:
         self.notify("SwipeSwitch launch requested. Check its logs if the listener does not start.")
 
     def show_diagnostics(self, *_):
-        self._dialog("System diagnostics", json.dumps(build_report(), indent=2))
+        report = build_report()
+        self._dialog("System diagnostics", json.dumps(report, indent=2))
 
     def show_status(self):
         self._dialog(

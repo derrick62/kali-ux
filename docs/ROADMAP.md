@@ -1,173 +1,104 @@
 # Kali UX — Development Roadmap
 
-**Status:** Proposed delivery sequence, not a declaration of completed work.
+**Status:** Active engineering plan. A feature is not complete merely because its interface exists.
 
 ## Delivery philosophy
 
-Build a reliable vertical slice before expanding breadth. Each phase has an outcome and exit criteria. We do not move forward merely because code has been written; the behaviour must be tested at the appropriate level and its status recorded.
+Build a reliable vertical slice before expanding breadth. Every phase has a user-visible outcome and exit criteria. Preserve the working baseline, make changes in small reviewable increments, and distinguish implemented, tested and live-verified behaviour.
 
 ## Phase 0 — Product and engineering foundation
 
-**Purpose:** establish a shared source of truth and a maintainable starting point.
+**Status:** Baseline established in 0.3.0-alpha.3.
+
+- Product specification, architecture, feature inventory and design principles.
+- Python package, CLI, test setup and developer workflow.
+- XDG configuration, diagnostics, GTK3 namespace loader and platform capability checks.
+- Security, privacy and packaging constraints.
+
+## Phase 1 — Control Center foundation (current)
+
+**Purpose:** make the Control Center the coherent management surface for the suite without making it responsible for feature implementation.
 
 Work:
-- Establish product specification, architecture, feature inventory and design principles.
-- Record decisions and unresolved questions.
-- Create the Python package, test setup and developer workflow.
-- Define security, privacy and packaging constraints.
+- Use `ControlCenterModel` as the single UI-facing owner of feature preferences.
+- Persist settings atomically with owner-only permissions.
+- Separate implementation maturity, runtime availability and enabled preference.
+- Detect requirements without changing system state.
+- Provide sidebar navigation, Overview, Features, Appearance, Gestures, Privacy, Diagnostics and About sections.
+- Gate feature controls according to saved preferences and detected availability.
+- Keep feature activation explicit; toggles must not start daemons, take input ownership or alter system settings.
+- Split the growing GTK application into focused page/components after the model and interaction contracts settle.
 
 Exit criteria:
-- Documentation is internally consistent.
-- The initial package installs in an isolated environment.
-- CLI smoke test and test suite pass.
-- Open decisions are visible rather than silently assumed.
+- Settings survive restart and malformed values are rejected safely.
+- Planned or unavailable features cannot be enabled; users can always disable a previously enabled feature.
+- Feature controls accurately reflect enabled/available state.
+- Diagnostics explain missing requirements without collecting private data.
+- GTK UI is manually validated on Kali XFCE/X11 for scaling, keyboard navigation and interaction.
 
-## Phase 1 — SwipeSwitch audit (next)
+## Phase 2 — SwipeSwitch integration and acceptance
 
-**Purpose:** understand the actual code before integrating or refactoring it.
+**Purpose:** make SwipeSwitch a reliable feature inside the shared architecture.
 
-Inspect:
-- Repository history, tree, packaging and dependencies.
-- Input listener and device detection.
-- Event parser and real event fixtures.
-- Gesture recognizer/state machine.
-- Window tracking, MRU ordering and workspace filtering.
-- Show Desktop snapshot/restoration.
-- Task View and horizontal switcher overlays.
-- Window activation and workspace navigation.
+Inspect and validate:
+- Input listener, device detection, event parser and real event fixtures.
+- Gesture recognizer lifecycle, reversal, cancellation and finger-count changes.
+- Window tracking, MRU ordering, workspace filtering and activation.
+- Show Desktop snapshot/restoration and workspace navigation.
+- Switcher overlay, Task View, thumbnails, keyboard navigation and dismissal.
 - Configuration, startup, logging and error recovery.
-- Automated tests and real-desktop verification.
 
-Classify each component as **Keep**, **Improve**, **Replace** or **Missing**. Record evidence, not assumptions.
-
-Deliverables:
-- Audit report.
-- Verified implementation-status matrix.
-- Test baseline and known failures.
-- Prioritized backlog and integration recommendation.
+Critical proof of concept:
+- Establish a supported input provider on the actual Kali machine.
+- Confirm device ownership, permissions and coexistence with existing gesture tools.
+- Do not assume `libinput debug-events` is a production API.
+- Do not disable services or modify input permissions automatically.
 
 Exit criteria:
-- Current source and archive differences are understood.
-- Every agreed gesture has a requirement-to-code trace.
-- Test failures are reproduced or explained.
-- No destructive refactor is started before the audit findings are reviewed.
+- No interference with normal touchpad operation.
+- Gesture transitions are predictable and cancellable.
+- Window activation and workspace behaviour pass real XFCE/X11 tests.
+- The feature can be enabled/disabled without orphaned processes.
 
-## Phase 2 — Platform and gesture integration proof of concept
+## Phase 3 — Window backend and Snap Assist
 
-**Purpose:** validate the system boundaries on the actual target machine.
+- Keep `xfwm4` authoritative.
+- Introduce a small X11/EWMH window-management adapter.
+- Calibrate usable monitor work areas, panels, scaling and window constraints.
+- Add snapping interactions and multi-monitor tests.
 
-Work:
-- Identify available gesture tools/services and their ownership.
-- Capture and inspect actual touchpad event sequences.
-- Validate the least-privilege event acquisition method.
-- Test cancellation, finger-count changes, event timing and device reconnect.
-- Validate X11/EWMH and libwnck operations against `xfwm4`.
-- Establish a shared gesture arbitration contract.
+## Phase 4 — Desktop overview and navigation
 
-Exit criteria:
-- The input source is technically and operationally understood.
-- Permission requirements are documented and minimized.
-- Existing gesture services are not modified without consent.
-- A prototype demonstrates clean ownership and cancellation.
+- Refine Task View and window overview.
+- Improve focus, dismissal, keyboard navigation and performance.
+- Add desktop/workspace navigation only where the backend supports it reliably.
 
-## Phase 3 — Shared core and first integrated vertical slice
+## Phase 5 — Gesture and shortcut management
 
-**Purpose:** introduce only the common infrastructure that multiple features genuinely need.
-
-Potential components:
-- Application lifecycle and single-instance policy.
-- Configuration loading/validation.
-- Structured logging and diagnostics.
-- Feature registration/enablement.
-- Platform capability detection.
-- Shared event contracts, if justified by real consumers.
-
-Integrate the audited SwipeSwitch functionality behind stable interfaces.
-
-Exit criteria:
-- Startup/shutdown are reliable.
-- Configuration failures are handled safely.
-- Feature failures do not crash unrelated components.
-- The integrated SwipeSwitch path passes automated and manual acceptance tests.
-
-## Phase 4 — Snap Assist and window layout foundation
-
-**Purpose:** deliver window arrangement without replacing `xfwm4`.
-
-Work:
-- Inventory native `xfwm4` snapping/tiling behaviour.
-- Define where a preview/assist UI adds value beyond native behaviour.
-- Validate geometry requests and monitor/workspace handling.
-- Test maximized, fullscreen, transient, fixed-size and multi-monitor windows.
-
-Exit criteria:
-- Feature adds demonstrable value.
-- Window manager remains authoritative.
-- Unsupported operations fail gracefully.
-
-## Phase 5 — Task View, navigation and visual refinement
-
-**Purpose:** refine window discovery, overview and navigation into a coherent interaction system.
-
-Work:
-- Separate quick switching from all-window overview.
-- Refine pointer/keyboard navigation and dismissal.
-- Evaluate thumbnails only after icons/titles and interaction correctness.
-- Test multi-monitor and compositor-on/off behaviour.
-
-Exit criteria:
-- Overview and switcher have distinct, understandable purposes.
-- Focus and activation behaviour are predictable.
-- Performance and accessibility checks pass.
+- Normalize provider events through one dispatcher.
+- Add explicit provider selection, conflict reporting and user-controlled mappings.
+- Avoid competing listeners and duplicate activation paths.
 
 ## Phase 6 — Productivity modules
 
-Deliver one module at a time:
-- Clipboard History.
-- Quick Panel.
-- Focus Tools.
-- Application Launcher.
-- Window Peek.
-- Layout Memory.
+Deliver one module at a time: Clipboard History, Quick Panel, Focus Tools, Application Launcher, Window Peek and Layout Memory. Each needs a privacy review where relevant, tests, enable/disable behaviour and documentation.
 
-Each module must have a product requirement, privacy assessment where applicable, tests, enable/disable behaviour and documentation before it is called complete.
+## Phase 7 — Polish and distribution
 
-## Phase 7 — Control Center and diagnostics
+- Accessibility, keyboard navigation, scaling, performance and visual consistency.
+- Debian package metadata and reproducible builds.
+- Install/upgrade/remove testing and configuration-preservation rules.
+- Release notes, checksums and support matrix.
+- Consider a signed APT repository only after the package lifecycle is stable.
 
-Unify configuration and status without making the Control Center a dependency for basic operation. Diagnostics should report capability, versions, feature health and redacted logs.
+## Phase 8 — Compatibility expansion
 
-## Phase 8 — Packaging and release
-
-Work:
-- Debian package metadata and reproducible build.
-- Install/upgrade/remove testing.
-- User-session startup integration.
-- Dependency and compatibility checks.
-- Release notes, checksums and documented support matrix.
-- Consider signed APT repository only after package/release process is stable.
-
-Exit criteria:
-- Fresh install, upgrade and removal are verified.
-- User configuration is preserved appropriately.
-- No privileged GUI execution.
-- Known limitations and troubleshooting are documented.
-
-## Phase 9 — Compatibility expansion
-
-Evaluate other X11 desktops and Wayland as separate engineering efforts. Wayland support requires compositor-specific protocols/APIs and cannot be assumed to work through X11/EWMH abstractions. Add a platform only after a concrete capability matrix and test environment exist.
+Evaluate other X11 desktops and Wayland as separate efforts. Wayland requires compositor-specific APIs and cannot be assumed to work through X11/EWMH abstractions.
 
 ## Milestone discipline
 
-For every milestone:
-1. Define user-visible behaviour and acceptance criteria.
-2. Identify platform constraints and risks.
-3. Design interfaces and record material decisions.
-4. Implement the smallest useful increment.
-5. Run automated tests.
-6. Run manual target-desktop tests where required.
-7. Record what is implemented, tested and verified.
-8. Update documentation and changelog.
+For every increment: define behaviour and acceptance criteria; inspect constraints; design interfaces; implement the smallest useful change; run automated tests; perform target-desktop tests; document limitations; update the changelog; and commit a checkpoint.
 
 ## Current position
 
-Phase 0 (product and engineering foundation) and Phase 1 (SwipeSwitch source audit) are complete for the supplied 0.3.0-alpha.2 archive. A focused source-remediation pass has consolidated the live gesture recognizer and improved process launching, focus-mode recovery, snapping, layout snapshot handling and automated tests. The next phase is **Phase 2: platform and gesture integration proof of concept** on the actual Kali XFCE/X11 machine. Do not enable automatic startup, change device permissions or modify existing gesture services as part of that proof of concept without explicit review.
+The 0.3.0-alpha.3 baseline is retained. The first Control Center foundation increment is implemented in 0.3.0-alpha.4: model-backed feature preferences, capability-aware availability, atomic configuration writes, sidebar navigation and feature-control gating. Automated tests pass in the build container. Live GTK interaction, accessibility, scaling and desktop-specific capability detection still require validation on the user's Kali XFCE/X11 system. SwipeSwitch integration/acceptance follows after this Control Center milestone is verified.

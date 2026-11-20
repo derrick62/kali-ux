@@ -51,4 +51,4 @@ SwipeSwitch requires an X11 session and access to its selected `/dev/input/event
 ./scripts/check.sh
 ```
 
-The alpha.3 build-container report records 41 passed and 1 skipped, with no expected failures. The skipped libwnck integration and all desktop behaviours still need validation on the target Kali XFCE session. A passing unit suite does not replace manual desktop testing.
+The alpha.4 build-container report records 46 passed and 1 skipped, with no expected failures. The skipped libwnck integration and all desktop behaviours still need validation on the target Kali XFCE session. A passing unit suite does not replace manual desktop testing.

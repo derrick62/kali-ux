@@ -7,7 +7,7 @@ import json
 
 from kali_ux import __version__
 from kali_ux.core.config import write_default_config
-from kali_ux.core.registry import FEATURES
+from kali_ux.control_center.model import ControlCenterModel
 from kali_ux.diagnostics.report import build_report
 
 
@@ -29,8 +29,17 @@ def main(argv: list[str] | None = None) -> int:
         print(write_default_config())
         return 0
     if a.command == "features":
-        for f in FEATURES:
-            print(f"{f.key:20} {f.status:12} {f.title}")
+        try:
+            features = ControlCenterModel().rows()
+        except (OSError, ValueError) as exc:
+            print(f"Cannot load feature preferences: {exc}")
+            return 1
+        for feature in features:
+            enabled = "enabled" if feature["enabled"] else "disabled"
+            print(
+                f"{feature['key']:20} {feature['implementation']:12} "
+                f"{feature['state']:24} {enabled:8} {feature['title']}"
+            )
         return 0
     if a.command == "swipeswitch":
         from kali_ux.features.window_switcher.engine.__main__ import main as run_switcher

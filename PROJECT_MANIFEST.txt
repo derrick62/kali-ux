@@ -1,9 +1,9 @@
-Kali UX 0.3.0-alpha.3 — interactive engineering prototype
+Kali UX 0.3.0-alpha.4 — interactive engineering prototype
 
-Core: XDG configuration/path handling, feature registry, platform capability checks, synchronous and detached command adapters, explicit GTK3 namespace loader, diagnostics.
-UI: GTK3 Control Center with Overview, Windows, Clipboard, Applications, Productivity and Settings.
+Core: XDG configuration/path handling, atomic private config writes, feature registry, platform capability checks, synchronous and detached command adapters, explicit GTK3 namespace loader, diagnostics.
+UI: GTK3 sidebar Control Center with Overview, Features, Windows, Clipboard, Applications, Productivity, Appearance, Gestures, Privacy, Diagnostics and About; model-backed feature preferences and capability-aware controls.
 Features: SwipeSwitch gesture recognizer, Task View, gesture routing contract, snap presets, clipboard history, application launcher, XFCE quick settings, focus mode and layout memory.
 Docs: source review report, product specification, architecture, roadmap, feature inventory, design principles, development, testing, privacy/security, packaging, verification and SwipeSwitch audit/history.
-Tests: 41 passed, 1 skipped, 0 expected failures in the build container. Ruff lint and formatting checks are included in scripts/check.sh; they were not run in the review container because Ruff was unavailable.
+Tests: 46 passed, 1 skipped, 0 expected failures in the build container. Python bytecode compilation and wheel build passed; wheel SHA-256 is recorded in docs/VERIFICATION_REPORT.md. Ruff lint and formatting checks are included in scripts/check.sh; they were not run in this container because Ruff was unavailable.
 
 Not implemented/verified: live desktop acceptance, production shared gesture input provider, compositor-aware screenshots/previews, Wayland, full workspace/monitor layout restoration, persistent clipboard history, automatic startup or privileged installation.

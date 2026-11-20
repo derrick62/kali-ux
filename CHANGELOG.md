@@ -44,3 +44,14 @@ All notable project changes are recorded here. This file begins with the foundat
 - Corrected release documentation and verification counts to match the source and actual test run.
 - Updated package metadata to use the SPDX `MIT` license identifier and a current setuptools build requirement.
 - Kept desktop integration limitations explicit; no live touchpad, compositor, multi-monitor or Debian package lifecycle acceptance is claimed.
+
+
+## 0.3.0-alpha.4 — Control Center foundation
+
+- Connected the GTK Control Center to `ControlCenterModel` for feature preference management.
+- Added capability-aware feature availability, separating implementation maturity, availability and enabled preference.
+- Prevented enabling planned or unavailable features while always allowing users to disable a saved preference.
+- Added atomic, owner-only configuration writes and strict boolean validation for feature enabled settings.
+- Replaced notebook tabs with GTK stack/sidebar navigation and added Features, Appearance, Gestures, Privacy, Diagnostics and About sections.
+- Gated feature controls using saved preferences and runtime availability; toggles do not start services or change system settings.
+- Added model/configuration regression tests and updated the development roadmap to put Control Center before SwipeSwitch integration.

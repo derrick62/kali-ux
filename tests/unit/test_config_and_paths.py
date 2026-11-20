@@ -67,3 +67,16 @@ def test_clipboard_limits_can_be_configured(tmp_path):
     config = load_config(config_file)
     assert config["clipboard"]["max_items"] == 12
     assert config["clipboard"]["max_item_bytes"] == 2048
+
+
+def test_feature_enabled_setting_must_be_boolean(tmp_path):
+    import json
+    import pytest
+
+    config_file = tmp_path / "config.json"
+    config_file.write_text(
+        json.dumps({"version": 1, "features": {"launcher": {"enabled": "yes"}}}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="features.launcher.enabled"):
+        load_config(config_file)

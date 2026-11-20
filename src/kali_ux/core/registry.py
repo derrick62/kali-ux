@@ -58,7 +58,7 @@ FEATURES = (
         "prototype",
         ("XFCE",),
     ),
-    Feature("launcher", "Application Launcher", "Desktop-entry search and launch", "prototype", ()),
+    Feature("launcher", "Application Launcher", "Desktop-entry search and launch", "prototype", ("gio",)),
     Feature(
         "window_peek",
         "Window Peek",

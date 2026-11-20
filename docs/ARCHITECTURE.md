@@ -1,6 +1,6 @@
 # Kali UX — Architecture Specification
 
-**Status:** Architecture baseline for the 0.3.0-alpha.3 prototype. Some planned adapter boundaries remain future work and must be validated against the target desktop.
+**Status:** Architecture baseline for the 0.3.0-alpha.4 prototype. Some planned adapter boundaries remain future work and must be validated against the target desktop.
 
 ## 1. Architectural approach
 
@@ -13,7 +13,7 @@ The architecture should make platform-specific code replaceable without pretendi
 ```text
 User interface (GTK)
         |
-Feature modules
+Control Center model / feature modules
         |
 Shared application core
         |
